@@ -7,7 +7,7 @@ from django.utils.html import format_html
 from django.db.models import Count, Q
 from django.utils import timezone
 from datetime import timedelta
-
+from unfold.admin import ModelAdmin
 from .models import eSIMPackage, Provider, Country
 from .tasks import (
     sync_all_esim_packages,
