@@ -48,6 +48,7 @@ class eSIMPackage(TimeStampedModel):  # Miras alıyoruz
     is_active = models.BooleanField(default=False)
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
     countries = models.ManyToManyField(Country)
+    external_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
 
     def __str__(self):
         return f"{self.name} - ${self.price}"

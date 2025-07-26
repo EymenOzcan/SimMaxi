@@ -22,7 +22,7 @@ from .tasks import (
 )
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def sync_all_packages(request):
     """Tüm eSIM paketlerini senkronize eder"""
     try:
@@ -39,7 +39,7 @@ def sync_all_packages(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def sync_country_packages(request):
     """Belirli bir ülke için paketleri senkronize eder"""
     country_code = request.data.get('country_code')
@@ -64,7 +64,7 @@ def sync_country_packages(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+#permission_classes([IsAuthenticated])
 def update_country_packages(request):
     """Belirli bir ülke için paketleri günceller"""
     country_code = request.data.get('country_code')
@@ -89,7 +89,7 @@ def update_country_packages(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+#permission_classes([IsAuthenticated])
 def batch_sync_countries_view(request):
     """Birden fazla ülke için toplu senkronizasyon"""
     country_codes = request.data.get('country_codes', [])
@@ -115,7 +115,7 @@ def batch_sync_countries_view(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+#permission_classes([IsAuthenticated])
 def batch_update_countries_view(request):
     """Birden fazla ülke için toplu güncelleme"""
     country_codes = request.data.get('country_codes', [])
@@ -141,7 +141,7 @@ def batch_update_countries_view(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+#permission_classes([IsAuthenticated])
 def cleanup_old_packages_view(request):
     """Eski paketleri temizler"""
     days = request.data.get('days', 30)
@@ -172,7 +172,7 @@ def cleanup_old_packages_view(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+#permission_classes([IsAuthenticated])
 def validate_package_data_view(request):
     """Paket verilerini doğrular"""
     try:

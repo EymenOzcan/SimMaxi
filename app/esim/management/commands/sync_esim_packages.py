@@ -19,8 +19,8 @@ def sync_esim_packages(self, packages: List[Dict], provider: Provider, target_co
             name = pkg.get("name", "Unnamed Package")
             price_raw = pkg.get("price", 0)
             price = Decimal(str(price_raw)) if price_raw else Decimal(0)
-            validity = int(pkg.get("validity_days", 0) or 0)
-            raw_data = pkg.get("data", "").upper().strip()
+            validity = int(pkg.get("duration", 0) or 0)
+            raw_data = pkg
             data_mb = self._parse_data_amount(raw_data)
 
             # Burada paket benzersiz id varsa ona göre yap
@@ -32,7 +32,7 @@ def sync_esim_packages(self, packages: List[Dict], provider: Provider, target_co
                 filter_kwargs["external_id"] = external_id
             else:
                 filter_kwargs["name"] = name
-
+            breakpoint()
             obj, is_created = eSIMPackage.objects.update_or_create(
                 defaults={
                     "name": name,

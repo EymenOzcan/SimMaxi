@@ -18,12 +18,15 @@ class BaseService:
     def _handle_response(self, response):
         try:
             response.raise_for_status()
-            return response.json()
+            json_data = response.json()
+            print(f"[DEBUG] Response JSON: {json_data}")  # EKLENDİ
+            return json_data
         except requests.exceptions.HTTPError as e:
-            print(f"[!] HTTP error: {e} | Response: {response.text}")
+            print(f"[!] HTTP error: {e} | Status: {response.status_code} | Response: {response.text}")
         except ValueError:
             print("[!] Response is not valid JSON.")
         return None
+
 
     def get(self, endpoint="", params=None, headers=None):
         try:
@@ -86,149 +89,6 @@ class BaseService:
             print(f"[!] DELETE request failed: {e}")
         return None
 
-
-class EsimMaxi:
-    """eSIM Access API Service - Country-based filtering supported"""
-    
-    def __init__(self):
-        self.service = BaseService(
-            base_url="https://api.esimaccess.com/api/v1/open",
-            headers={"RT-AccessCode": "2ee5c03386c54f7696d6a1391329730e"}
-        )
-        self.provider_slug = "esimaccess"
-        self.provider_name = "eSIM Access"
-        self.api_key = "2ee5c03386c54f7696d6a1391329730e"
-
-    def get_all_esim(self):
-        """Tüm eSIM paketlerini çeker"""
-        print("[INFO] eSIM Access - Tüm paketler çekiliyor...")
-        data = self.service.get(endpoint="package/list")
-        if data and "data" in data:
-            provider = self._get_or_create_provider()
-            self.sync_esim_packages(data["data"], provider)
-        else:
-            print("[ERROR] eSIM Access - Tüm paketler çekilemedi")
-
-    def get_esim_by_country(self, country_code: str):
-        """Belirli bir ülke için eSIM paketlerini çeker"""
-        print(f"[INFO] eSIM Access - {country_code} ülkesi için paketler çekiliyor...")
-        payload = {"locationCode": country_code}
-        data = self.service.post(endpoint="package/list", json=payload)
-        print(f"[DEBUG] API response for country {country_code}: {data}")
-
-        if data and "data" in data:
-            provider = self._get_or_create_provider()
-            # Ülke kodunu paketlere ekle ki sadece bu ülke için güncelleme yapılsın
-            filtered_packages = self._filter_packages_by_country(data["data"], country_code)
-            self.sync_esim_packages(filtered_packages, provider, target_country=country_code)
-        else:
-            print(f"[WARNING] eSIM Access - {country_code} için veri alınamadı: {data}")
-
-    def update_country_packages(self, country_code: str):
-        """Belirli bir ülkenin paketlerini günceller"""
-        print(f"[INFO] eSIM Access - {country_code} ülkesi paketleri güncelleniyor...")
-        
-        # Önce mevcut paketleri pasif hale getir
-        self._deactivate_country_packages(country_code)
-        
-        # Yeni verileri çek ve güncelle
-        self.get_esim_by_country(country_code)
-
-    def _get_or_create_provider(self):
-        """Provider'ı oluştur veya getir"""
-        provider, created = Provider.objects.get_or_create(
-            slug=self.provider_slug,
-            defaults={
-                "name": self.provider_name,
-                "api_key": self.api_key,
-            }
-        )
-        if created:
-            print(f"[INFO] Yeni provider oluşturuldu: {self.provider_name}")
-        return provider
-
-    def _filter_packages_by_country(self, packages: List[Dict], country_code: str) -> List[Dict]:
-        """Paketleri belirli ülke koduna göre filtreler"""
-        filtered = []
-        for pkg in packages:
-            country_codes = pkg.get("country_codes", [])
-            if country_code in country_codes:
-                filtered.append(pkg)
-        return filtered
-
-    def _deactivate_country_packages(self, country_code: str):
-        """Belirli ülke için mevcut paketleri pasif hale getirir"""
-        try:
-            country = Country.objects.get(code=country_code)
-            provider = Provider.objects.get(slug=self.provider_slug)
-            
-            packages = eSIMPackage.objects.filter(
-                provider=provider,
-                countries=country,
-                is_active=True
-            )
-            
-            packages.update(is_active=False, updated_at=timezone.now())
-            print(f"[INFO] {packages.count()} adet {country_code} paketi pasif hale getirildi")
-            
-        except Country.DoesNotExist:
-            print(f"[WARNING] {country_code} ülkesi bulunamadı")
-        except Provider.DoesNotExist:
-            print(f"[WARNING] {self.provider_slug} provider'ı bulunamadı")
-
-    def sync_esim_packages(self, packages: List[Dict], provider: Provider, target_country: Optional[str] = None):
-        """eSIM paketlerini veritabanı ile senkronize eder"""
-        created, updated = 0, 0
-        
-        for pkg in packages:
-            try:
-                name = pkg.get("name", "Unnamed Package")
-                price = Decimal(str(pkg.get("price", 0)))
-                validity = int(pkg.get("validity_days", 0))
-                raw_data = pkg.get("data", "").upper().strip()
-                
-                # Veri miktarını MB'ye çevir
-                data_mb = self._parse_data_amount(raw_data)
-
-                # Paket oluştur veya güncelle
-                obj, is_created = eSIMPackage.objects.update_or_create(
-                    name=name,
-                    provider=provider,
-                    defaults={
-                        "price": price,
-                        "validity_days": validity,
-                        "data_amount_mb": data_mb,
-                        "detail": pkg,
-                        "is_active": True,
-                        "updated_at": timezone.now(),
-                    }
-                )
-
-                # Ülke ilişkilerini ayarla
-                country_codes = pkg.get("country_codes", [])
-                if country_codes:
-                    countries = Country.objects.filter(code__in=country_codes)
-                    obj.countries.set(countries)
-
-                if is_created:
-                    created += 1
-                else:
-                    updated += 1
-                    
-            except Exception as e:
-                print(f"[ERROR] Paket işlenirken hata: {e} - Paket: {pkg}")
-
-        print(f"[✓] eSIM Access - {created} paket oluşturuldu, {updated} paket güncellendi.")
-
-    def _parse_data_amount(self, raw_data: str) -> int:
-        """Veri miktarını MB'ye çevirir"""
-        if raw_data.endswith("GB"):
-            return int(float(raw_data.replace("GB", "")) * 1024)
-        elif raw_data.endswith("MB"):
-            return int(float(raw_data.replace("MB", "")))
-        return 0
-
-
 class Esimgo:
     """eSIM Go API Service - Tüm bundles/countries endpoint'leri ile"""
     
@@ -288,8 +148,6 @@ class Esimgo:
         Belirli bir ülke için paketleri çeker.
         eSIM Go'da ülke bazlı filtreleme yok, tüm paketleri çekip filtreleriz.
         """
-        print(f"[INFO] eSIM Go - {country_code} ülkesi için paketler filtreleniyor...")
-        
         # Tüm bundles'ı çek
         all_bundles = self.service.get(endpoint="catalogue")
         
@@ -347,7 +205,6 @@ class Esimgo:
         filtered = []
         for bundle in bundles:
             countries = bundle.get("countries", [])
-            # Eğer countries dict listesi ise, iso kodlarını çek
             if countries and isinstance(countries[0], dict):
                 country_codes = [c.get("iso") for c in countries if "iso" in c]
             else:
@@ -382,7 +239,7 @@ class Esimgo:
 
         for pkg in packages:
             try:
-                name = pkg.get("name") or pkg.get("title") or "Unnamed Package"
+                name = pkg.get("description") or pkg.get("title") or "Unnamed Package"
                 price = Decimal(str(pkg.get("price") or 0))
                 validity = int(pkg.get("validity_days") or pkg.get("validity") or pkg.get("duration") or 0)
 
@@ -400,11 +257,12 @@ class Esimgo:
 
                 # Benzersiz anahtar için external_id kullanımı (modelde varsa)
                 external_id = pkg.get("id") or pkg.get("external_id")
+
                 filter_kwargs = {"provider": provider}
                 if external_id:
                     filter_kwargs["external_id"] = external_id
                 else:
-                    filter_kwargs["name"] = name
+                    filter_kwargs["name__iexact"] = name.strip()
 
                 obj, is_created = eSIMPackage.objects.update_or_create(
                     defaults={
@@ -415,6 +273,7 @@ class Esimgo:
                         "detail": pkg,
                         "is_active": True,
                         "updated_at": timezone.now(),
+                        "external_id": external_id if external_id else None,
                     },
                     **filter_kwargs
                 )
@@ -454,6 +313,143 @@ class Esimgo:
         elif raw_data.endswith("MB"):
             return int(float(raw_data.replace("MB", "")))
         return 0
+class EsimMaxi:
+    """eSIM Access API Service - Country-based filtering supported"""
+    
+    def __init__(self):
+        self.service = BaseService(
+            base_url="https://api.esimaccess.com/api/v1/open",
+            headers={"RT-AccessCode": "2ee5c03386c54f7696d6a1391329730e"}
+        )
+        self.provider_slug = "esimaccess"
+        self.provider_name = "eSIM Access"
+        self.api_key = "2ee5c03386c54f7696d6a1391329730e"
+
+    def get_all_esim(self):
+        """Tüm eSIM paketlerini çeker"""
+        print("[INFO] eSIM Access - Tüm paketler çekiliyor...")
+        data = self.service.post(endpoint="package/list", json={})
+        provider = self._get_or_create_provider()
+        self.sync_esim_packages(data["obj"]["packageList"], provider)
+
+
+    def get_esim_by_country(self, country_code: str):
+        """Belirli bir ülke için eSIM paketlerini çeker"""
+        print(f"[INFO] eSIM Access - {country_code} ülkesi için paketler çekiliyor...")
+        payload = {"locationCode": country_code}
+        data = self.service.post(endpoint="package/list", json=payload)
+        print(f"[DEBUG] API response for country {country_code}: {data}")
+
+        provider = self._get_or_create_provider()
+        # Ülke kodunu paketlere ekle ki sadece bu ülke için güncelleme yapılsın
+        filtered_packages = self._filter_packages_by_country(data["data"], country_code)
+        self.sync_esim_packages(filtered_packages, provider, target_country=country_code)
+
+    def update_country_packages(self, country_code: str):
+        """Belirli bir ülkenin paketlerini günceller"""
+        print(f"[INFO] eSIM Access - {country_code} ülkesi paketleri güncelleniyor...")
+        
+        # Önce mevcut paketleri pasif hale getir
+        self._deactivate_country_packages(country_code)
+        
+        # Yeni verileri çek ve güncelle
+        self.get_esim_by_country(country_code)
+
+    def _get_or_create_provider(self):
+        """Provider'ı oluştur veya getir"""
+        provider, created = Provider.objects.get_or_create(
+            slug=self.provider_slug,
+            defaults={
+                "name": self.provider_name,
+                "api_key": self.api_key,
+            }
+        )
+        if created:
+            print(f"[INFO] Yeni provider oluşturuldu: {self.provider_name}")
+        return provider
+
+    def _filter_packages_by_country(self, packages: List[Dict], country_code: str) -> List[Dict]:
+        """Paketleri belirli ülke koduna göre filtreler"""
+        filtered = []
+        for pkg in packages:
+            country_codes = pkg.get("locationNetworkList", ["locationName"])
+            if country_code in country_codes:
+                filtered.append(pkg)
+        return filtered
+
+    def _deactivate_country_packages(self, country_code: str):
+        """Belirli ülke için mevcut paketleri pasif hale getirir"""
+        try:
+            country = Country.objects.get(code=country_code)
+            provider = Provider.objects.get(slug=self.provider_slug)
+            
+            packages = eSIMPackage.objects.filter(
+                provider=provider,
+                countries=country,
+                is_active=True
+            )
+            
+            packages.update(is_active=False, updated_at=timezone.now())
+            print(f"[INFO] {packages.count()} adet {country_code} paketi pasif hale getirildi")
+            
+        except Country.DoesNotExist:
+            print(f"[WARNING] {country_code} ülkesi bulunamadı")
+        except Provider.DoesNotExist:
+            print(f"[WARNING] {self.provider_slug} provider'ı bulunamadı")
+
+    def sync_esim_packages(self, packages: List[Dict], provider: Provider, target_country: Optional[str] = None):
+        """eSIM paketlerini veritabanı ile senkronize eder"""
+        created, updated = 0, 0
+        
+        for pkg in packages:
+            try:
+                name = pkg.get("name", "Unnamed Package")
+                price = Decimal(str(pkg.get("price", 0)))
+                validity = int(pkg.get("duration", 0))
+                raw_data = pkg.get("data", "").upper().strip()
+                
+                # Veri miktarını MB'ye çevir
+                data_mb = 0
+                
+                if "volume" in pkg and isinstance(pkg["volume"], (int, float)) and pkg["volume"] > 0:
+                    data_mb = int(pkg["volume"] / (1024 * 1024))  # Byte'tan MB'ye çevir
+                    print(f"[DEBUG] Volume'den veri: {pkg['volume']} bytes = {data_mb} MB")
+                else:
+                    raw_data = pkg.get("data", "").upper().strip()
+                    data_mb = self._parse_data_amount(raw_data)
+
+                # Paket oluştur veya güncelle
+                obj, is_created = eSIMPackage.objects.update_or_create(
+                    name=name,
+                    provider=provider,
+                    defaults={
+                        "price": price,
+                        "validity_days": validity,
+                        "data_amount_mb": data_mb,
+                        "detail": pkg,
+                        "is_active": True,
+                        "updated_at": timezone.now(),
+                    }
+                )
+
+                # Ülke ilişkilerini ayarla
+                country_codes = pkg.get("country_codes", [])
+                if country_codes:
+                    countries = Country.objects.filter(code__in=country_codes)
+                    obj.countries.set(countries)
+
+                if is_created:
+                    created += 1
+                else:
+                    updated += 1
+                    
+            except Exception as e:
+                print(f"[ERROR] Paket işlenirken hata: {e} - Paket: {pkg}")
+
+        print(f"[✓] eSIM Access - {created} paket oluşturuldu, {updated} paket güncellendi.")
+
+    
+
 
 
 class eSIMService:

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "app.esim",
     'rest_framework',
+    "app.users"
     
      
 ]
@@ -86,9 +87,13 @@ WSGI_APPLICATION = "simmaxi.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'simmaxi',          # Oluşturduğun database adı
+        'USER': 'postgres',   # PostgreSQL kullanıcı adı
+        'PASSWORD': '123456',       # Kullanıcı şifresi
+        'HOST': 'localhost',       # Genellikle localhost
+        'PORT': '5432',            # PostgreSQL default port
     }
 }
 
@@ -134,7 +139,7 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
-
+AUTH_USER_MODEL = 'users.CustomUser'
 from celery.schedules import crontab
 
 CELERY_BEAT_SCHEDULE = {
@@ -173,4 +178,9 @@ CELERY_BEAT_SCHEDULE = {
 
 CELERY_TIMEZONE = 'Europe/Istanbul'
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
 
