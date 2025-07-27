@@ -19,7 +19,6 @@ class BaseService:
         try:
             response.raise_for_status()
             json_data = response.json()
-            print(f"[DEBUG] Response JSON: {json_data}")  # EKLENDİ
             return json_data
         except requests.exceptions.HTTPError as e:
             print(f"[!] HTTP error: {e} | Status: {response.status_code} | Response: {response.text}")
@@ -279,24 +278,22 @@ class Esimgo:
                 )
 
                 # Ülke eşleştirmeleri
-                coverage = pkg.get("coverage") or []
+
                 countries_raw = pkg.get("countries") or []
                 country_codes = pkg.get("country_codes") or []
-
-                # EsimGo için countries alanındaki iso kodunu çıkar
                 iso_codes = []
                 for c in countries_raw:
                     if isinstance(c, dict):
-                        if "country" in c and isinstance(c["country"], dict):
-                            iso = c["country"].get("iso")
+                        if "countries" in c and isinstance(c["countries"], dict):
+                            iso = c["countries"].get("iso")
                             if iso:
                                 iso_codes.append(iso)
 
-                all_country_codes = list(set(coverage + iso_codes + country_codes))
+                all_country_codes = list(set(iso_codes + country_codes))
 
                 # DB'de eşleştir
                 if all_country_codes:
-                    countries_qs = Country.objects.filter(code__in=all_country_codes)
+                    countries_qs = Country.objects.filter(code=iso_codes)
                     obj.countries.set(countries_qs)
 
 
@@ -428,8 +425,6 @@ class EsimMaxi:
                 else:
                     raw_data = pkg.get("data", "").upper().strip()
                     data_mb = self._parse_data_amount(raw_data)
-
-                # Paket oluştur veya güncelle
                 obj, is_created = eSIMPackage.objects.update_or_create(
                     name=name,
                     provider=provider,
@@ -443,7 +438,7 @@ class EsimMaxi:
                     }
                 )
 
-                # Ülke ilişkilerini ayarla
+           
                 location_networks = pkg.get("locationNetworkList", [])
                 country_codes = []
 
@@ -451,16 +446,11 @@ class EsimMaxi:
                     code = loc.get("locationCode")
                     if code:
                         country_codes.append(code)
-
-                # Eğer target_country parametresi verilmişse onu da ekleyelim (opsiyonel)
                 if target_country and target_country not in country_codes:
                     country_codes.append(target_country)
-
-                # DB'deki ülke objeleriyle eşleştir
                 if country_codes:
                     countries = Country.objects.filter(code__in=country_codes)
                     obj.countries.set(countries)
-
                 if is_created:
                     created += 1
                 else:

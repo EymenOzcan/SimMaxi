@@ -5,6 +5,8 @@ from .serializers import RegisterSerializer, UserSerializer, ChangePasswordSeria
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
 
@@ -55,3 +57,14 @@ class ResetPasswordView(APIView):
             return Response({"detail": "Şifre reset maili gönderildi (mock)."})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class LogoutView(APIView):
+    permissions_classes = (IsAuthenticated)
+    def post(self,request):
+        try:
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({"detail":"Logout Başarılı"},status=status.HTTP_205_RESET_CONTENT)
+
+        except Exception as e:
+            return Response({"error":"Geçersiz token veya eksik parametre"}, status=status.HTTP_400_BAD_REQUEST)

@@ -8,12 +8,8 @@ urlpatterns = [
     path('api/update/country/', views.update_country_packages, name='update_country_packages'),
     path('api/sync/batch/', views.batch_sync_countries_view, name='batch_sync_countries'),
     path('api/update/batch/', views.batch_update_countries_view, name='batch_update_countries'),
-    
-    # API endpoints for maintenance
     path('api/cleanup/', views.cleanup_old_packages_view, name='cleanup_old_packages'),
     path('api/validate/', views.validate_package_data_view, name='validate_package_data'),
-    
-    # API endpoints for information
     path('api/stats/', views.get_package_stats, name='get_package_stats'),
     path('api/countries/', views.get_supported_countries, name='get_supported_countries'),
     path('api/search/', views.search_packages, name='search_packages'),
