@@ -280,17 +280,25 @@ class Esimgo:
 
                 # Ülke eşleştirmeleri
                 coverage = pkg.get("coverage") or []
-                countries = pkg.get("countries") or []
+                countries_raw = pkg.get("countries") or []
                 country_codes = pkg.get("country_codes") or []
 
-                # Eğer countries dict listesi ise, iso kodlarını çek
-                if countries and isinstance(countries[0], dict):
-                    countries = [c.get("iso") for c in countries if "iso" in c]
+                # EsimGo için countries alanındaki iso kodunu çıkar
+                iso_codes = []
+                for c in countries_raw:
+                    if isinstance(c, dict):
+                        if "country" in c and isinstance(c["country"], dict):
+                            iso = c["country"].get("iso")
+                            if iso:
+                                iso_codes.append(iso)
 
-                all_country_codes = list(set(coverage + countries + country_codes))
+                all_country_codes = list(set(coverage + iso_codes + country_codes))
+
+                # DB'de eşleştir
                 if all_country_codes:
                     countries_qs = Country.objects.filter(code__in=all_country_codes)
                     obj.countries.set(countries_qs)
+
 
                 if is_created:
                     created += 1
@@ -372,10 +380,13 @@ class EsimMaxi:
         """Paketleri belirli ülke koduna göre filtreler"""
         filtered = []
         for pkg in packages:
-            country_codes = pkg.get("locationNetworkList", ["locationName"])
-            if country_code in country_codes:
-                filtered.append(pkg)
+            networks = pkg.get("locationNetworkList", [])
+            for net in networks:
+                if net.get("locationCode") == country_code:
+                    filtered.append(pkg)
+                    break   
         return filtered
+
 
     def _deactivate_country_packages(self, country_code: str):
         """Belirli ülke için mevcut paketleri pasif hale getirir"""
@@ -404,7 +415,7 @@ class EsimMaxi:
         for pkg in packages:
             try:
                 name = pkg.get("name", "Unnamed Package")
-                price = Decimal(str(pkg.get("price", 0)))
+                price = Decimal(str(pkg.get("price", 0))) / 100
                 validity = int(pkg.get("duration", 0))
                 raw_data = pkg.get("data", "").upper().strip()
                 
@@ -433,7 +444,19 @@ class EsimMaxi:
                 )
 
                 # Ülke ilişkilerini ayarla
-                country_codes = pkg.get("country_codes", [])
+                location_networks = pkg.get("locationNetworkList", [])
+                country_codes = []
+
+                for loc in location_networks:
+                    code = loc.get("locationCode")
+                    if code:
+                        country_codes.append(code)
+
+                # Eğer target_country parametresi verilmişse onu da ekleyelim (opsiyonel)
+                if target_country and target_country not in country_codes:
+                    country_codes.append(target_country)
+
+                # DB'deki ülke objeleriyle eşleştir
                 if country_codes:
                     countries = Country.objects.filter(code__in=country_codes)
                     obj.countries.set(countries)
