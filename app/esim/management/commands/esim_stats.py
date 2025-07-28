@@ -1,4 +1,3 @@
-# management/commands/esim_stats.py
 from django.core.management.base import BaseCommand
 from app.esim.models import eSIMPackage, Provider, Country
 from django.db.models import Count, Q
@@ -10,8 +9,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS("📊 eSIM Paket İstatistikleri"))
         self.stdout.write("=" * 50)
-
-        # Provider bazlı istatistikler
         providers = Provider.objects.annotate(
             total_packages=Count("esimpackage"),
             active_packages=Count("esimpackage", filter=Q(esimpackage__is_active=True)),
@@ -25,7 +22,6 @@ class Command(BaseCommand):
                 f"  Pasif Paket: {provider.total_packages - provider.active_packages}"
             )
 
-        # Ülke bazlı istatistikler
         self.stdout.write(f"\n🌍 Ülke Bazlı İstatistikler:")
         countries_with_packages = (
             Country.objects.annotate(
@@ -42,7 +38,7 @@ class Command(BaseCommand):
                 f"  {country.code} ({country.name}): {country.package_count} paket"
             )
 
-        # Genel istatistikler
+       
         total_packages = eSIMPackage.objects.count()
         active_packages = eSIMPackage.objects.filter(is_active=True).count()
 

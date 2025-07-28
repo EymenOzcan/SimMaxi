@@ -18,7 +18,6 @@ from .tasks import (
 )
 
 
-# Custom range filter for numeric fields
 class PriceRangeFilter(admin.SimpleListFilter):
     title = "Fiyat Aralığı"
     parameter_name = "price_range"
@@ -337,7 +336,6 @@ class eSIMPackageAdmin(admin.ModelAdmin):
                 )
                 return redirect("admin:esim_esimpackage_changelist")
 
-        # Silinecek paket sayısını hesapla
         cutoff_date = timezone.now() - timedelta(days=30)
         packages_to_delete = eSIMPackage.objects.filter(
             is_active=False, updated_at__lt=cutoff_date
@@ -370,11 +368,9 @@ class eSIMPackageAdmin(admin.ModelAdmin):
         )
 
     def stats_view(self, request):
-        # İstatistikleri hesapla
         total_packages = eSIMPackage.objects.count()
         active_packages = eSIMPackage.objects.filter(is_active=True).count()
 
-        # Provider istatistikleri
         provider_stats = []
         for provider in Provider.objects.all():
             total = eSIMPackage.objects.filter(provider=provider).count()
@@ -390,7 +386,6 @@ class eSIMPackageAdmin(admin.ModelAdmin):
                 }
             )
 
-        # Ülke istatistikleri
         country_stats = []
         countries_with_packages = (
             Country.objects.annotate(
@@ -416,7 +411,6 @@ class eSIMPackageAdmin(admin.ModelAdmin):
         )
 
 
-# Admin site özelleştirmeleri
 admin.site.site_header = "eSIM Yönetim Paneli"
 admin.site.site_title = "eSIM Admin"
 admin.site.index_title = "eSIM Paket Yönetimi"

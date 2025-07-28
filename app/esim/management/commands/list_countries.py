@@ -1,4 +1,3 @@
-# management/commands/list_countries.py
 from django.core.management.base import BaseCommand
 from app.esim.services import eSIMService
 from app.esim.models import Country

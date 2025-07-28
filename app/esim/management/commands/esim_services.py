@@ -31,7 +31,7 @@ class Command(BaseCommand):
                 name=package["name"],
                 provider=provider,
                 defaults={
-                    "price": package["retailPrice"] / 100,  # cent -> dolar
+                    "price": package["retailPrice"] / 100, 
                     "validity_days": package["duration"],
                     "data_amount_mb": package["volume"] // 1024 // 1024,
                     "detail": package,
@@ -39,8 +39,6 @@ class Command(BaseCommand):
                     "updated_at": now(),
                 },
             )
-
-            # Country
             country_codes = []
             for loc in package.get("locationNetworkList", []):
                 country, _ = Country.objects.get_or_create(

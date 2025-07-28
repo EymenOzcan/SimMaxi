@@ -1,4 +1,3 @@
-# app/esim/tasks.py
 from celery import shared_task
 from django.utils import timezone
 from datetime import timedelta
@@ -241,7 +240,7 @@ def validate_package_data():
             "total_active": total_active,
             "problematic_count": problematic_count,
             "success_rate": round(success_rate, 2),
-            "issues": issues[:50],  # İlk 50 sorunu döndür
+            "issues": issues[:50],   
         }
 
     except Exception as exc:
@@ -249,6 +248,3 @@ def validate_package_data():
         return {"status": "error", "message": str(exc)}
 
 
-# Periodic task'lar için schedule konfigürasyonu
-
-# settings.py veya celery.py dosyasına eklenecek

@@ -7,8 +7,8 @@ router = DefaultRouter()
 router.register(r"packages", EsimPackageViewSet, basename="packages")
 
 urlpatterns = [
-    path("api/", include(router.urls)),  # 👈 Bunu ekliyoruz
-    # API endpoints for synchronization
+    path("api/", include(router.urls)),   
+    
     path("api/sync/all/", views.sync_all_packages, name="sync_all_packages"),
     path(
         "api/sync/country/", views.sync_country_packages, name="sync_country_packages"
@@ -35,6 +35,6 @@ urlpatterns = [
         "api/countries/", views.get_supported_countries, name="get_supported_countries"
     ),
     path("api/search/", views.search_packages, name="search_packages"),
-    # General sync endpoint (class-based view)
+   
     path("api/sync/", views.eSIMSyncView.as_view(), name="esim_sync"),
 ]

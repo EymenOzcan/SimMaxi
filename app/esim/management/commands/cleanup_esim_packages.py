@@ -1,4 +1,3 @@
-# management/commands/cleanup_esim_packages.py
 from django.core.management.base import BaseCommand
 from app.esim.models import eSIMPackage
 from django.utils import timezone
@@ -25,7 +24,6 @@ class Command(BaseCommand):
 
         cutoff_date = timezone.now() - timedelta(days=days)
 
-        # Silinecek paketleri bul
         packages_to_delete = eSIMPackage.objects.filter(
             is_active=False, updated_at__lt=cutoff_date
         )
@@ -38,8 +36,6 @@ class Command(BaseCommand):
                     f"🔍 DRY RUN: {count} paket silinecek (son {days} gün içinde güncellenmemiş pasif paketler)"
                 )
             )
-
-            # İlk 10 paketi göster
             for pkg in packages_to_delete[:10]:
                 self.stdout.write(
                     f"  - {pkg.name} ({pkg.provider.name}) - Son güncelleme: {pkg.updated_at}"

@@ -1,4 +1,3 @@
-# app/esim/views.py
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -26,7 +25,7 @@ from .tasks import (
 
 
 @api_view(["POST"])
-# @permission_classes([IsAuthenticated])
+
 def sync_all_packages(request):
     """Tüm eSIM paketlerini senkronize eder"""
     try:
@@ -47,7 +46,7 @@ def sync_all_packages(request):
 
 
 @api_view(["POST"])
-# @permission_classes([IsAuthenticated])
+
 def sync_country_packages(request):
     """Belirli bir ülke için paketleri senkronize eder"""
     country_code = request.data.get("country_code")
@@ -76,7 +75,7 @@ def sync_country_packages(request):
 
 
 @api_view(["POST"])
-# permission_classes([IsAuthenticated])
+
 def update_country_packages(request):
     """Belirli bir ülke için paketleri günceller"""
     country_code = request.data.get("country_code")
@@ -105,7 +104,7 @@ def update_country_packages(request):
 
 
 @api_view(["POST"])
-# permission_classes([IsAuthenticated])
+
 def batch_sync_countries_view(request):
     """Birden fazla ülke için toplu senkronizasyon"""
     country_codes = request.data.get("country_codes", [])
@@ -135,7 +134,7 @@ def batch_sync_countries_view(request):
 
 
 @api_view(["POST"])
-# permission_classes([IsAuthenticated])
+
 def batch_update_countries_view(request):
     """Birden fazla ülke için toplu güncelleme"""
     country_codes = request.data.get("country_codes", [])
@@ -165,7 +164,7 @@ def batch_update_countries_view(request):
 
 
 @api_view(["DELETE"])
-# permission_classes([IsAuthenticated])
+
 def cleanup_old_packages_view(request):
     """Eski paketleri temizler"""
     days = request.data.get("days", 30)
@@ -203,7 +202,7 @@ def cleanup_old_packages_view(request):
 
 
 @api_view(["GET"])
-# permission_classes([IsAuthenticated])
+
 def validate_package_data_view(request):
     """Paket verilerini doğrular"""
     try:
@@ -227,7 +226,7 @@ def validate_package_data_view(request):
 def get_package_stats(request):
     """eSIM paket istatistiklerini döndürür"""
     try:
-        # Provider bazlı istatistikler
+        
         providers_stats = []
         for provider in Provider.objects.all():
             total_packages = eSIMPackage.objects.filter(provider=provider).count()
@@ -245,7 +244,6 @@ def get_package_stats(request):
                 }
             )
 
-        # Ülke bazlı istatistikler (en çok paketi olan 10 ülke)
         countries_stats = []
         for country in Country.objects.all()[:10]:
             package_count = eSIMPackage.objects.filter(
@@ -263,7 +261,6 @@ def get_package_stats(request):
 
         countries_stats.sort(key=lambda x: x["package_count"], reverse=True)
 
-        # Genel istatistikler
         total_packages = eSIMPackage.objects.count()
         active_packages = eSIMPackage.objects.filter(is_active=True).count()
 
@@ -304,7 +301,6 @@ def get_supported_countries(request):
             esim_go_countries = service.esim_go.get_countries()
             country_data = [{"code": c, "name": c} for c in esim_go_countries]
         else:
-            # Veritabanından ilgili provider'ın paketlerine sahip ülkeleri getir
             countries = (
                 Country.objects.filter(
                     esimpackage__provider__slug=provider, esimpackage__is_active=True
@@ -333,7 +329,6 @@ def get_supported_countries(request):
 def search_packages(request):
     """eSIM paketlerini arar ve filtreler"""
     try:
-        # Query parametreleri
         country_code = request.GET.get("country")
         provider_slug = request.GET.get("provider")
         min_price = request.GET.get("min_price")
@@ -346,10 +341,9 @@ def search_packages(request):
         page = int(request.GET.get("page", 1))
         page_size = int(request.GET.get("page_size", 20))
 
-        # Base queryset
         queryset = eSIMPackage.objects.filter(is_active=True)
 
-        # Filtreler
+        
         if country_code:
             queryset = queryset.filter(countries__code=country_code)
 
@@ -439,7 +433,6 @@ def search_packages(request):
         )
 
 
-# Class-based views for more complex operations
 @method_decorator(csrf_exempt, name="dispatch")
 class eSIMSyncView(View):
     """eSIM senkronizasyon için genel endpoint"""

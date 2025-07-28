@@ -23,11 +23,7 @@ def sync_esim_packages(
             validity = int(pkg.get("duration", 0) or 0)
             raw_data = pkg
             data_mb = self._parse_data_amount(raw_data)
-
-            # Burada paket benzersiz id varsa ona göre yap
             external_id = pkg.get("id") or pkg.get("external_id")
-
-            # Modelde external_id yoksa, sadece name ve provider ile devam
             filter_kwargs = {"provider": provider}
             if external_id:
                 filter_kwargs["external_id"] = external_id

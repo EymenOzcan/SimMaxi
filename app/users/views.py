@@ -63,7 +63,7 @@ class ResetPasswordView(APIView):
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
         if serializer.is_valid():
-            # İleride email gönderme ekleyeceğiz
+            # İleride email gönderme eklenecek
             return Response({"detail": "Şifre reset maili gönderildi (mock)."})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
