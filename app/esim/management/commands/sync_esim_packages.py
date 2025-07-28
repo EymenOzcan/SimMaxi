@@ -5,8 +5,9 @@ from typing import Dict, List, Optional
 from app.esim.models import Country, Provider, eSIMPackage
 
 
-
-def sync_esim_packages(self, packages: List[Dict], provider: Provider, target_country: Optional[str] = None):
+def sync_esim_packages(
+    self, packages: List[Dict], provider: Provider, target_country: Optional[str] = None
+):
     created, updated = 0, 0
 
     if not packages:
@@ -43,7 +44,7 @@ def sync_esim_packages(self, packages: List[Dict], provider: Provider, target_co
                     "is_active": True,
                     "updated_at": timezone.now(),
                 },
-                **filter_kwargs
+                **filter_kwargs,
             )
 
             country_codes = pkg.get("country_codes", [])

@@ -50,14 +50,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "app.esim",
-    'rest_framework',
+    "rest_framework",
     "app.users",
-    'drf_spectacular',
-    'rest_framework_simplejwt',
-    'rest_framework_simplejwt.token_blacklist',
-
-    
-     
+    "drf_spectacular",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
 ]
 
 MIDDLEWARE = [
@@ -94,13 +91,13 @@ WSGI_APPLICATION = "simmaxi.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'simmaxi',          # Oluşturduğun database adı
-        'USER': 'postgres',   # PostgreSQL kullanıcı adı
-        'PASSWORD': '123456',       # Kullanıcı şifresi
-        'HOST': 'localhost',       # Genellikle localhost
-        'PORT': '5432',            # PostgreSQL default port
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "simmaxi",  # Oluşturduğun database adı
+        "USER": "postgres",  # PostgreSQL kullanıcı adı
+        "PASSWORD": "123456",  # Kullanıcı şifresi
+        "HOST": "localhost",  # Genellikle localhost
+        "PORT": "5432",  # PostgreSQL default port
     }
 }
 
@@ -145,63 +142,59 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-AUTH_USER_MODEL = 'users.CustomUser'
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+AUTH_USER_MODEL = "users.CustomUser"
 
 from celery.schedules import crontab
 
 CELERY_BEAT_SCHEDULE = {
     # Her gün saat 02:00'da tüm paketleri güncelle
-    'sync-all-esim-packages': {
-        'task': 'app.esim.tasks.sync_all_esim_packages',
-        'schedule': crontab(hour=2, minute=0),
+    "sync-all-esim-packages": {
+        "task": "app.esim.tasks.sync_all_esim_packages",
+        "schedule": crontab(hour=2, minute=0),
     },
-    
     # Her saat başı Türkiye paketlerini güncelle
-    'update-turkey-packages': {
-        'task': 'app.esim.tasks.update_country_esim_packages',
-        'schedule': crontab(minute=0),
-        'args': ('TR',)
+    "update-turkey-packages": {
+        "task": "app.esim.tasks.update_country_esim_packages",
+        "schedule": crontab(minute=0),
+        "args": ("TR",),
     },
-    
     # Her hafta Pazar günü saat 03:00'da eski paketleri temizle
-    'cleanup-old-packages': {
-        'task': 'app.esim.tasks.cleanup_old_packages',
-        'schedule': crontab(hour=3, minute=0, day_of_week=0),
-        'args': (30,)  # 30 gün önceki paketleri sil
+    "cleanup-old-packages": {
+        "task": "app.esim.tasks.cleanup_old_packages",
+        "schedule": crontab(hour=3, minute=0, day_of_week=0),
+        "args": (30,),  # 30 gün önceki paketleri sil
     },
-    
     # Her gün saat 04:00'da veri doğrulaması yap
-    'validate-package-data': {
-        'task': 'app.esim.tasks.validate_package_data',
-        'schedule': crontab(hour=4, minute=0),
+    "validate-package-data": {
+        "task": "app.esim.tasks.validate_package_data",
+        "schedule": crontab(hour=4, minute=0),
     },
-    
     # Her 6 saatte bir eSIM Go paketlerini güncelle
-    'update-esimgo-packages': {
-        'task': 'app.esim.tasks.update_esimgo_packages',
-        'schedule': crontab(minute=0, hour='*/6'),
+    "update-esimgo-packages": {
+        "task": "app.esim.tasks.update_esimgo_packages",
+        "schedule": crontab(minute=0, hour="*/6"),
     },
 }
 
-CELERY_TIMEZONE = 'Europe/Istanbul'
+CELERY_TIMEZONE = "Europe/Istanbul"
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
     ],
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 # Configure Spectacular settings
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'SimMaxi API',
-    'DESCRIPTION': 'API for managing blog posts, comments, and categories',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
+    "TITLE": "SimMaxi API",
+    "DESCRIPTION": "API for managing blog posts, comments, and categories",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 SIMPLE_JWT = {
@@ -210,7 +203,6 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
     "UPDATE_LAST_LOGIN": False,
-
     "ALGORITHM": "HS256",
     "SIGNING_KEY": settings.SECRET_KEY,
     "VERIFYING_KEY": "",
@@ -219,24 +211,19 @@ SIMPLE_JWT = {
     "JSON_ENCODER": None,
     "JWK_URL": None,
     "LEEWAY": 0,
-
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
     "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "user_id",
     "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
-
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
     "TOKEN_TYPE_CLAIM": "token_type",
     "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
-
     "JTI_CLAIM": "jti",
-
     "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
     "SLIDING_TOKEN_LIFETIME": timedelta(days=1),
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=7),
-    'BLACKLIST_AFTER_ROTATION': True,
-
+    "BLACKLIST_AFTER_ROTATION": True,
     "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainPairSerializer",
     "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
     "TOKEN_VERIFY_SERIALIZER": "rest_framework_simplejwt.serializers.TokenVerifySerializer",

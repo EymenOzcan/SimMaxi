@@ -3,8 +3,8 @@ from django.db import models
 
 
 class TimeStampedModel(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)  # Kayıt oluşturulma zamanı
-    updated_at = models.DateTimeField(auto_now=True)      # Son güncelleme zamanı
+    created_at = models.DateTimeField(auto_now_add=True)  
+    updated_at = models.DateTimeField(auto_now=True)  
 
     class Meta:
         abstract = True
@@ -24,7 +24,7 @@ class Country(models.Model):
         ordering = ["name"]
 
 
-class Provider(TimeStampedModel):  # Miras alıyoruz
+class Provider(TimeStampedModel): 
     name = models.CharField(max_length=255)
     slug = models.CharField(max_length=100)
     api_key = models.CharField(max_length=500)
@@ -39,7 +39,7 @@ class Provider(TimeStampedModel):  # Miras alıyoruz
         ordering = ["name"]
 
 
-class eSIMPackage(TimeStampedModel):  # Miras alıyoruz
+class eSIMPackage(TimeStampedModel):
     name = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     validity_days = models.PositiveIntegerField()
