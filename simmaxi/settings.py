@@ -153,18 +153,6 @@ CELERY_BEAT_SCHEDULE = {
         "task": "app.esim.tasks.sync_all_esim_packages",
         "schedule": crontab(hour=2, minute=0),
     },
-    # Her saat başı Türkiye paketlerini güncelle
-    "update-turkey-packages": {
-        "task": "app.esim.tasks.update_country_esim_packages",
-        "schedule": crontab(minute=0),
-        "args": ("TR",),
-    },
-    # Her hafta Pazar günü saat 03:00'da eski paketleri temizle
-    "cleanup-old-packages": {
-        "task": "app.esim.tasks.cleanup_old_packages",
-        "schedule": crontab(hour=3, minute=0, day_of_week=0),
-        "args": (30,),  # 30 gün önceki paketleri sil
-    },
     # Her gün saat 04:00'da veri doğrulaması yap
     "validate-package-data": {
         "task": "app.esim.tasks.validate_package_data",

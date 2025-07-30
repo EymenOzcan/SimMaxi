@@ -365,12 +365,18 @@ class EsimMaxi:
         data = self.service.post(endpoint="package/list", json=payload)
         print(f"[DEBUG] API response for country {country_code}: {data}")
 
+        if not data or not data.get("success") or not data.get("obj"):
+            error_msg = data.get("errorMsg", "Bilinmeyen hata") if data else "API yanıtı boş"
+            print(f"[ERROR] {country_code} eSIM paket senkronizasyonu hatası: {error_msg}")
+            return {"status": "error", "message": error_msg}
+
         provider = self._get_or_create_provider()
-        filtered_packages = self._filter_packages_by_country(data["obj"]["packageList"], country_code)
+        filtered_packages = self._filter_packages_by_country(data["obj"].get("packageList", []), country_code)
 
         self.sync_esim_packages(
             filtered_packages, provider, target_country=country_code
         )
+
 
     def update_country_packages(self, country_code: str):
         """Belirli bir ülkenin paketlerini günceller"""
@@ -437,7 +443,7 @@ class EsimMaxi:
         for pkg in packages:
             try:
                 name = pkg.get("name", "Unnamed Package")
-                price = Decimal(str(pkg.get("price", 0))) / 100
+                price = Decimal(str(pkg.get("price", 0))) / 10000
                 validity = int(pkg.get("duration", 0))
                 raw_data = pkg.get("data", "").upper().strip()
 
@@ -519,17 +525,16 @@ class eSIMService:
         )
 
         
-        self.esim_access.get_esim_by_country(country_code)
-        self.esim_go.get_esim_by_country(country_code)
+        
+        self.esim_go.update_country_packages(country_code)
+        self.esim_access.update_country_packages(country_code)
 
         print(f"[✓] {country_code} ülkesi için tüm provider'lar senkronize edildi")
 
     def update_country_packages(self, country_code: str):
         """Belirli bir ülke için paketleri günceller"""
         print(f"[INFO] {country_code} ülkesi paketleri güncelleniyor...")
-        self.esim_access.update_country_packages(country_code)
-        self.esim_go.update_country_packages(country_code)
-
+        pass
         print(f"[✓] {country_code} ülkesi paketleri güncellendi")
 
     def get_supported_countries(self):
