@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import eSIMPackage
+from .models import Country, eSIMPackage
 
 
 class eSIMPackageSerializer(serializers.ModelSerializer):
@@ -34,3 +34,14 @@ class eSIMPackageSerializer(serializers.ModelSerializer):
             return obj.name
 
         return obj.name
+
+class CountryEsimSerializer(serializers.ModelSerializer):
+    eSIMPackages = eSIMPackageSerializer(many=True, read_only=True, source='esimpackage_set')    
+    class Meta:
+        model = Country
+        fields = [
+            "name",
+            "code",
+            "eSIMPackages"
+        
+        ]

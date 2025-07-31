@@ -14,6 +14,7 @@ class Country(models.Model):
     name = models.CharField(max_length=190)
     code = models.CharField(max_length=20)
     flag = models.URLField()
+    
 
     def __str__(self):
         return f"{self.name} ({self.code})"
@@ -68,3 +69,4 @@ class eSIMPackage(TimeStampedModel):
         verbose_name = "eSIM Paketi"
         verbose_name_plural = "eSIM Paketleri"
         ordering = ["-updated_at"]
+

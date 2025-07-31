@@ -9,10 +9,10 @@ from django.views import View
 import json
 from rest_framework import viewsets, permissions
 
-from app.esim.serializers import eSIMPackageSerializer
+from app.esim.serializers import CountryEsimSerializer, eSIMPackageSerializer
 
 from .services import eSIMService, EsimMaxi, Esimgo
-from .models import eSIMPackage, Country, Provider
+from .models import  eSIMPackage, Country, Provider
 from .tasks import (
     sync_all_esim_packages,
     sync_country_esim_packages,
@@ -504,4 +504,10 @@ class EsimPackageViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = eSIMPackage.objects.all()
     serializer_class = eSIMPackageSerializer
+    permission_classes = [permissions.AllowAny]
+
+class CountryPackageViewSet(viewsets.ReadOnlyModelViewSet):
+    """Databasede Bulunan paketleri Ülke Bazlı Çeker"""
+    queryset = Country.objects.all()
+    serializer_class= CountryEsimSerializer
     permission_classes = [permissions.AllowAny]

@@ -96,11 +96,11 @@ class Esimgo:
     def __init__(self):
         self.service = BaseService(
             base_url="https://api.esim-go.com/v2.4",
-            headers={"X-API-Key": "NuzAFxpBhLUHQ7HNaN4sF63NlfYSs7IRxc-CszQp"},
+            headers={"X-API-Key": f"API_KEY"},
         )
         self.provider_slug = "esimgo"
         self.provider_name = "eSIM Go"
-        self.api_key = "NuzAFxpBhLUHQ7HNaN4sF63NlfYSs7IRxc-CszQp"
+        self.api_key = f"API_KEY"
 
     def get_all_esim(self):
         """Tüm eSIM Go paketlerini tüm sayfalardan çeker"""

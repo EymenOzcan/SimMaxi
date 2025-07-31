@@ -1,10 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
-from .views import EsimPackageViewSet
+from .views import CountryPackageViewSet, EsimPackageViewSet
 
 router = DefaultRouter()
 router.register(r"packages", EsimPackageViewSet, basename="packages")
+router.register(r"country",CountryPackageViewSet,basename="country")
 
 urlpatterns = [
     path("api/", include(router.urls)),   
