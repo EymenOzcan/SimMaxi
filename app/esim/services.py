@@ -1,4 +1,6 @@
 from decimal import Decimal
+from decouple import config
+
 import wave
 import requests
 from requests.exceptions import RequestException, Timeout
@@ -96,12 +98,13 @@ class Esimgo:
     def __init__(self):
         self.service = BaseService(
             base_url="https://api.esim-go.com/v2.4",
-            headers={"X-API-Key": f"API_KEY"},
-        )
+           headers = {
+            "X-API-Key": config("ESIMGO_API_KEY")
+        })
         self.provider_slug = "esimgo"
         self.provider_name = "eSIM Go"
-        self.api_key = f"API_KEY"
-
+        self.api_key = config("ESIMGO_API_KEY")
+        breakpoint()
     def get_all_esim(self):
         """Tüm eSIM Go paketlerini tüm sayfalardan çeker"""
         print("[INFO] eSIM Go - Tüm bundles (tüm sayfalar) çekiliyor...")
@@ -345,12 +348,11 @@ class EsimMaxi:
     def __init__(self):
         self.service = BaseService(
             base_url="https://api.esimaccess.com/api/v1/open",
-            headers={"RT-AccessCode": "2ee5c03386c54f7696d6a1391329730e"},
+            headers={"RT-AccessCode": config("ESIMACCESS_API_KEY")},
         )
         self.provider_slug = "esimaccess"
         self.provider_name = "eSIM Access"
-        self.api_key = "2ee5c03386c54f7696d6a1391329730e"
-
+        self.api_key = config("ESIMACCESS_API_KEY")
     def get_all_esim(self):
         """Tüm eSIM paketlerini çeker"""
         print("[INFO] eSIM Access - Tüm paketler çekiliyor...")
@@ -514,7 +516,7 @@ class eSIMService:
         self.esim_access.get_all_esim()
 
        
-        self.esim_go.get_all_esim()
+        #self.esim_go.get_all_esim()
 
         print("[✓] Tüm provider'lar senkronize edildi")
 

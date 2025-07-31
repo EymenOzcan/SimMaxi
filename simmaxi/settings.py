@@ -180,7 +180,7 @@ REST_FRAMEWORK = {
 # Configure Spectacular settings
 SPECTACULAR_SETTINGS = {
     "TITLE": "SimMaxi API",
-    "DESCRIPTION": "API for managing blog posts, comments, and categories",
+    "DESCRIPTION": "",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
 }

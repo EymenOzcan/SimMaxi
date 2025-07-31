@@ -12,6 +12,8 @@ class eSIMPackageSerializer(serializers.ModelSerializer):
             "name",
             "formatted_name",
             "provider",
+            "price",
+            "data_amount_mb"
         ] 
 
     def get_formatted_name(self, obj):

@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand
 from app.esim.models import Country, Provider, eSIMPackage
 from django.utils.timezone import now
 import json
+from decouple import config
 
 
 class Command(BaseCommand):
@@ -11,7 +12,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         provider = Provider.objects.get(slug="esimaccess")
         url = "https://api.esimaccess.com/api/v1/open/package/list"
-        headers = {"RT-AccessCode": "2ee5c03386c54f7696d6a1391329730e"}
+        headers = {"RT-AccessCode": config("ESIMACCESS_API_KEY")}
         payload = {}
         print("GÖNDERİLEN VERİ:", json.dumps(payload, indent=2))
 
