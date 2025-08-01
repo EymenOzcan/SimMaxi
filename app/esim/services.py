@@ -104,7 +104,7 @@ class Esimgo:
         self.provider_slug = "esimgo"
         self.provider_name = "eSIM Go"
         self.api_key = config("ESIMGO_API_KEY")
-        breakpoint()
+        
     def get_all_esim(self):
         """Tüm eSIM Go paketlerini tüm sayfalardan çeker"""
         print("[INFO] eSIM Go - Tüm bundles (tüm sayfalar) çekiliyor...")
@@ -516,7 +516,7 @@ class eSIMService:
         self.esim_access.get_all_esim()
 
        
-        #self.esim_go.get_all_esim()
+        self.esim_go.get_all_esim()
 
         print("[✓] Tüm provider'lar senkronize edildi")
 

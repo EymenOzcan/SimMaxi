@@ -508,6 +508,6 @@ class EsimPackageViewSet(viewsets.ReadOnlyModelViewSet):
 
 class CountryPackageViewSet(viewsets.ReadOnlyModelViewSet):
     """Databasede Bulunan paketleri Ülke Bazlı Çeker"""
-    queryset = Country.objects.all()
+    queryset = Country.objects.prefetch_related("esimpackage_set")
     serializer_class= CountryEsimSerializer
     permission_classes = [permissions.AllowAny]
