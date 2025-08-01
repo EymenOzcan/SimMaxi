@@ -74,18 +74,3 @@ Bash
 python manage.py runserver
 Uygulamaya tarayıcınızdan http://127.0.0.1:8000/ adresinden erişebilirsiniz.
 
-🤝 Katkıda Bulunma
-Proje hala geliştirme aşamasında ve katkılarınıza açıktır. Eğer katkıda bulunmak isterseniz, lütfen aşağıdaki adımları izleyin:
-
-Projenin kod deposunu (fork) kopyalayın.
-
-Yeni bir özellik veya hata giderme için yeni bir dal (branch) oluşturun: git checkout -b ozellik/yeni-ozellik
-
-Değişikliklerinizi yapın ve commit mesajınızı yazın: git commit -m 'feat: yeni özellik eklendi'
-
-Değişikliklerinizi kendi dalınıza gönderin: git push origin ozellik/yeni-ozellik
-
-GitHub üzerinden bir "Pull Request" oluşturun.
-
-📄 Lisans
-Bu proje, MIT Lisansı altında lisanslanmıştır. Daha fazla bilgi için LICENSE dosyasına bakabilirsiniz.
