@@ -5,11 +5,10 @@ from .views import CountryPackageViewSet, EsimPackageViewSet
 
 router = DefaultRouter()
 router.register(r"packages", EsimPackageViewSet, basename="packages")
-router.register(r"country",CountryPackageViewSet,basename="country")
+router.register(r"country", CountryPackageViewSet, basename="country")
 
 urlpatterns = [
-    path("api/", include(router.urls)),   
-    
+    path("api/", include(router.urls)),
     path("api/sync/all/", views.sync_all_packages, name="sync_all_packages"),
     path(
         "api/sync/country/", views.sync_country_packages, name="sync_country_packages"
@@ -36,6 +35,5 @@ urlpatterns = [
         "api/countries/", views.get_supported_countries, name="get_supported_countries"
     ),
     path("api/search/", views.search_packages, name="search_packages"),
-   
     path("api/sync/", views.eSIMSyncView.as_view(), name="esim_sync"),
 ]

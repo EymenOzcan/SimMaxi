@@ -98,19 +98,18 @@ class Esimgo:
     def __init__(self):
         self.service = BaseService(
             base_url="https://api.esim-go.com/v2.4",
-           headers = {
-            "X-API-Key": config("ESIMGO_API_KEY")
-        })
+            headers={"X-API-Key": config("ESIMGO_API_KEY")},
+        )
         self.provider_slug = "esimgo"
         self.provider_name = "eSIM Go"
         self.api_key = config("ESIMGO_API_KEY")
-        
+
     def get_all_esim(self):
         """Tüm eSIM Go paketlerini tüm sayfalardan çeker"""
         print("[INFO] eSIM Go - Tüm bundles (tüm sayfalar) çekiliyor...")
         all_bundles = []
         page = 1
-        page_size = 50   
+        page_size = 50
 
         while True:
             params = {"page": page, "pageSize": page_size}
@@ -177,13 +176,11 @@ class Esimgo:
         """Tüm paketleri günceller - bundles değişikliklerini takip eder"""
         print("[INFO] eSIM Go - Tüm paketler güncelleniyor...")
 
-        
         provider = self._get_or_create_provider()
         eSIMPackage.objects.filter(provider=provider, is_active=True).update(
             is_active=False, updated_at=timezone.now()
         )
 
-        
         self.get_all_esim()
 
     def _get_or_create_provider(self):
@@ -252,7 +249,6 @@ class Esimgo:
                     or 0
                 )
 
-               
                 data_mb = 0
                 if "dataAmount" in pkg and isinstance(pkg["dataAmount"], (int, float)):
                     data_mb = (
@@ -261,7 +257,7 @@ class Esimgo:
                         else 0
                     )
                 else:
-                   
+
                     raw_data = (
                         (
                             pkg.get("data")
@@ -273,7 +269,7 @@ class Esimgo:
                         .strip()
                     )
                     data_mb = self._parse_data_amount(raw_data)
-                
+
                 if not data_mb or data_mb < 0:
                     data_mb = 0
 
@@ -299,8 +295,6 @@ class Esimgo:
                     **filter_kwargs,
                 )
 
-                
-
                 countries_raw = pkg.get("countries") or []
                 country_codes = pkg.get("country_codes") or []
                 iso_codes = []
@@ -313,7 +307,6 @@ class Esimgo:
 
                 all_country_codes = list(set(iso_codes + country_codes))
 
-                
                 if all_country_codes:
                     countries_qs = Country.objects.filter(code=iso_codes)
                     obj.countries.set(countries_qs)
@@ -353,6 +346,7 @@ class EsimMaxi:
         self.provider_slug = "esimaccess"
         self.provider_name = "eSIM Access"
         self.api_key = config("ESIMACCESS_API_KEY")
+
     def get_all_esim(self):
         """Tüm eSIM paketlerini çeker"""
         print("[INFO] eSIM Access - Tüm paketler çekiliyor...")
@@ -368,17 +362,22 @@ class EsimMaxi:
         print(f"[DEBUG] API response for country {country_code}: {data}")
 
         if not data or not data.get("success") or not data.get("obj"):
-            error_msg = data.get("errorMsg", "Bilinmeyen hata") if data else "API yanıtı boş"
-            print(f"[ERROR] {country_code} eSIM paket senkronizasyonu hatası: {error_msg}")
+            error_msg = (
+                data.get("errorMsg", "Bilinmeyen hata") if data else "API yanıtı boş"
+            )
+            print(
+                f"[ERROR] {country_code} eSIM paket senkronizasyonu hatası: {error_msg}"
+            )
             return {"status": "error", "message": error_msg}
 
         provider = self._get_or_create_provider()
-        filtered_packages = self._filter_packages_by_country(data["obj"].get("packageList", []), country_code)
+        filtered_packages = self._filter_packages_by_country(
+            data["obj"].get("packageList", []), country_code
+        )
 
         self.sync_esim_packages(
             filtered_packages, provider, target_country=country_code
         )
-
 
     def update_country_packages(self, country_code: str):
         """Belirli bir ülkenin paketlerini günceller"""
@@ -456,7 +455,7 @@ class EsimMaxi:
                     and isinstance(pkg["volume"], (int, float))
                     and pkg["volume"] > 0
                 ):
-                    data_mb = int(pkg["volume"] / (1024 * 1024))  
+                    data_mb = int(pkg["volume"] / (1024 * 1024))
                     print(
                         f"[DEBUG] Volume'den veri: {pkg['volume']} bytes = {data_mb} MB"
                     )
@@ -512,10 +511,8 @@ class eSIMService:
         """Tüm provider'lardan paketleri çeker"""
         print("[INFO] Tüm provider'lar senkronize ediliyor...")
 
-       
         self.esim_access.get_all_esim()
 
-       
         self.esim_go.get_all_esim()
 
         print("[✓] Tüm provider'lar senkronize edildi")
@@ -526,8 +523,6 @@ class eSIMService:
             f"[INFO] {country_code} ülkesi için tüm provider'lar senkronize ediliyor..."
         )
 
-        
-        
         self.esim_go.update_country_packages(country_code)
         self.esim_access.update_country_packages(country_code)
 

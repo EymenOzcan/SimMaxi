@@ -38,7 +38,6 @@ class Command(BaseCommand):
                 f"  {country.code} ({country.name}): {country.package_count} paket"
             )
 
-       
         total_packages = eSIMPackage.objects.count()
         active_packages = eSIMPackage.objects.filter(is_active=True).count()
 

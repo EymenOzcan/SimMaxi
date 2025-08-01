@@ -7,14 +7,7 @@ class eSIMPackageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = eSIMPackage
-        fields = [
-            "id",
-            "name",
-            "formatted_name",
-            "provider",
-            "price",
-            "data_amount_mb"
-        ] 
+        fields = ["id", "name", "formatted_name", "provider", "price", "data_amount_mb"]
 
     def get_formatted_name(self, obj):
         if obj.provider.slug == "esimaccess":
@@ -31,19 +24,18 @@ class eSIMPackageSerializer(serializers.ModelSerializer):
             if len(parts) >= 5:
                 country = parts[3]
                 data = parts[1]
-                validity = parts[2].replace(" ", " ") 
+                validity = parts[2].replace(" ", " ")
                 return f"{country},{validity}/{data}"
             return obj.name
 
         return obj.name
 
+
 class CountryEsimSerializer(serializers.ModelSerializer):
-    eSIMPackages = eSIMPackageSerializer(many=True, read_only=True, source='esimpackage_set')    
+    eSIMPackages = eSIMPackageSerializer(
+        many=True, read_only=True, source="esimpackage_set"
+    )
+
     class Meta:
         model = Country
-        fields = [
-            "name",
-            "code",
-            "eSIMPackages"
-        
-        ]
+        fields = ["name", "code", "eSIMPackages"]

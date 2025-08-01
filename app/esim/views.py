@@ -12,7 +12,7 @@ from rest_framework import viewsets, permissions
 from app.esim.serializers import CountryEsimSerializer, eSIMPackageSerializer
 
 from .services import eSIMService, EsimMaxi, Esimgo
-from .models import  eSIMPackage, Country, Provider
+from .models import eSIMPackage, Country, Provider
 from .tasks import (
     sync_all_esim_packages,
     sync_country_esim_packages,
@@ -25,7 +25,6 @@ from .tasks import (
 
 
 @api_view(["POST"])
-
 def sync_all_packages(request):
     """Tüm eSIM paketlerini senkronize eder"""
     try:
@@ -46,7 +45,6 @@ def sync_all_packages(request):
 
 
 @api_view(["POST"])
-
 def sync_country_packages(request):
     """Belirli bir ülke için paketleri senkronize eder"""
     country_code = request.data.get("country_code")
@@ -75,7 +73,6 @@ def sync_country_packages(request):
 
 
 @api_view(["POST"])
-
 def update_country_packages(request):
     """Belirli bir ülke için paketleri günceller"""
     country_code = request.data.get("country_code")
@@ -104,7 +101,6 @@ def update_country_packages(request):
 
 
 @api_view(["POST"])
-
 def batch_sync_countries_view(request):
     """Birden fazla ülke için toplu senkronizasyon"""
     country_codes = request.data.get("country_codes", [])
@@ -134,7 +130,6 @@ def batch_sync_countries_view(request):
 
 
 @api_view(["POST"])
-
 def batch_update_countries_view(request):
     """Birden fazla ülke için toplu güncelleme"""
     country_codes = request.data.get("country_codes", [])
@@ -164,7 +159,6 @@ def batch_update_countries_view(request):
 
 
 @api_view(["DELETE"])
-
 def cleanup_old_packages_view(request):
     """Eski paketleri temizler"""
     days = request.data.get("days", 30)
@@ -202,7 +196,6 @@ def cleanup_old_packages_view(request):
 
 
 @api_view(["GET"])
-
 def validate_package_data_view(request):
     """Paket verilerini doğrular"""
     try:
@@ -226,7 +219,7 @@ def validate_package_data_view(request):
 def get_package_stats(request):
     """eSIM paket istatistiklerini döndürür"""
     try:
-        
+
         providers_stats = []
         for provider in Provider.objects.all():
             total_packages = eSIMPackage.objects.filter(provider=provider).count()
@@ -333,9 +326,9 @@ def search_packages(request):
         provider_slug = request.GET.get("provider")
         min_price = request.GET.get("min_price")
         max_price = request.GET.get("max_price")
-        min_data = request.GET.get("min_data") 
-        max_data = request.GET.get("max_data") 
-        min_validity = request.GET.get("min_validity") 
+        min_data = request.GET.get("min_data")
+        max_data = request.GET.get("max_data")
+        min_validity = request.GET.get("min_validity")
         max_validity = request.GET.get("max_validity")
         search_term = request.GET.get("search")
         page = int(request.GET.get("page", 1))
@@ -343,7 +336,6 @@ def search_packages(request):
 
         queryset = eSIMPackage.objects.filter(is_active=True)
 
-        
         if country_code:
             queryset = queryset.filter(countries__code=country_code)
 
@@ -371,7 +363,6 @@ def search_packages(request):
         if search_term:
             queryset = queryset.filter(name__icontains=search_term)
 
-       
         total_count = queryset.count()
         start = (page - 1) * page_size
         end = start + page_size
@@ -506,8 +497,10 @@ class EsimPackageViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = eSIMPackageSerializer
     permission_classes = [permissions.AllowAny]
 
+
 class CountryPackageViewSet(viewsets.ReadOnlyModelViewSet):
     """Databasede Bulunan paketleri Ülke Bazlı Çeker"""
+
     queryset = Country.objects.prefetch_related("esimpackage_set")
-    serializer_class= CountryEsimSerializer
+    serializer_class = CountryEsimSerializer
     permission_classes = [permissions.AllowAny]

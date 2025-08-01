@@ -44,6 +44,7 @@ def sync_country_esim_packages(self, country_code):
             raise self.retry(countdown=60 * (self.request.retries + 1))
         return {"status": "error", "message": str(exc)}
 
+
 @shared_task(bind=True, max_retries=3)
 def update_country_esim_packages(self, country_code):
     """Belirli bir ülke için eSIM paketlerini günceller"""
@@ -68,7 +69,7 @@ def sync_esimaccess_packages():
         esim_access = EsimMaxi()
         esim_access.get_all_esim()
         logger.info("eSIM Access paketleri başarıyla senkronize edildi")
-        
+
         return {
             "status": "success",
             "message": "eSIM Access paketleri senkronize edildi",
@@ -81,13 +82,13 @@ def sync_esimaccess_packages():
 @shared_task
 def sync_esimgo_packages():
     """Sadece eSIM Go paketlerini senkronize eder"""
-   
+
     try:
         logger.info("eSIM Go paketleri senkronizasyonu başlatıldı")
         esim_go = Esimgo()
         esim_go.get_all_esim()
         logger.info("eSIM Go paketleri başarıyla senkronize edildi")
-       
+
         return {"status": "success", "message": "eSIM Go paketleri senkronize edildi"}
     except Exception as exc:
         logger.error(f"eSIM Go senkronizasyon hatası: {exc}")
@@ -240,11 +241,9 @@ def validate_package_data():
             "total_active": total_active,
             "problematic_count": problematic_count,
             "success_rate": round(success_rate, 2),
-            "issues": issues[:50],   
+            "issues": issues[:50],
         }
 
     except Exception as exc:
         logger.error(f"Veri doğrulaması hatası: {exc}")
         return {"status": "error", "message": str(exc)}
-
-

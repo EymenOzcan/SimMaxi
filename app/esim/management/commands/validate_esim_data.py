@@ -17,15 +17,12 @@ class Command(BaseCommand):
         for pkg in active_packages:
             pkg_issues = []
 
-           
             if pkg.price <= Decimal("0"):
                 pkg_issues.append("Fiyat 0 veya negatif")
 
-           
             if pkg.data_amount_mb <= 0:
                 pkg_issues.append("Veri miktarı 0 veya negatif")
 
-            
             if pkg.validity_days <= 0:
                 pkg_issues.append("Geçerlilik süresi 0 veya negatif")
 
@@ -43,7 +40,7 @@ class Command(BaseCommand):
                 self.style.ERROR(f"❌ {len(issues)} pakette sorun bulundu:")
             )
 
-            for item in issues[:20]: 
+            for item in issues[:20]:
                 pkg = item["package"]
                 self.stdout.write(f"\n📦 {pkg.name} ({pkg.provider.name}):")
                 for issue in item["issues"]:

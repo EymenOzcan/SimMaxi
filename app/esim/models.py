@@ -3,8 +3,8 @@ from django.db import models
 
 
 class TimeStampedModel(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True) 
-    updated_at = models.DateTimeField(auto_now=True)  
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
@@ -14,7 +14,6 @@ class Country(models.Model):
     name = models.CharField(max_length=190)
     code = models.CharField(max_length=20)
     flag = models.URLField()
-    
 
     def __str__(self):
         return f"{self.name} ({self.code})"
@@ -25,7 +24,7 @@ class Country(models.Model):
         ordering = ["name"]
 
 
-class Provider(TimeStampedModel): 
+class Provider(TimeStampedModel):
     name = models.CharField(max_length=255)
     slug = models.CharField(max_length=100)
     api_key = models.CharField(max_length=500)
@@ -69,4 +68,3 @@ class eSIMPackage(TimeStampedModel):
         verbose_name = "eSIM Paketi"
         verbose_name_plural = "eSIM Paketleri"
         ordering = ["-updated_at"]
-

@@ -32,7 +32,7 @@ class Command(BaseCommand):
                 name=package["name"],
                 provider=provider,
                 defaults={
-                    "price": package["retailPrice"] / 100, 
+                    "price": package["retailPrice"] / 100,
                     "validity_days": package["duration"],
                     "data_amount_mb": package["volume"] // 1024 // 1024,
                     "detail": package,
