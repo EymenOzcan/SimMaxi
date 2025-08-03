@@ -8,6 +8,8 @@ from django.db.models import Count, Q
 from django.utils import timezone
 from datetime import timedelta
 from unfold.admin import ModelAdmin
+
+from app.users.models import CustomUser
 from .models import eSIMPackage, Provider, Country
 from .tasks import (
     sync_all_esim_packages,
@@ -409,6 +411,12 @@ class eSIMPackageAdmin(admin.ModelAdmin):
                 "country_stats": countries_with_packages,
             },
         )
+
+@admin.register(CustomUser)
+class CustomUserAdmin(admin.ModelAdmin):
+    list_display = ('username', 'email', 'balance', 'currency', 'is_staff')
+    list_filter = ('currency',)
+    search_fields = ('username', 'email')
 
 
 admin.site.site_header = "eSIM Yönetim Paneli"
