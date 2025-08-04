@@ -1,9 +1,12 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from app.dealers.models import Dealer
+
 
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
+    dealer = models.ForeignKey(Dealer,blank=True,null=True, on_delete=models.CASCADE)
     balance = models.DecimalField(
         max_digits=12,
         decimal_places=2,

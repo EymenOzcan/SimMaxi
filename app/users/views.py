@@ -12,7 +12,10 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from app.dealers.models import Dealer
+from .forms import JoinDealerForm
 User = get_user_model()
 
 
@@ -85,3 +88,20 @@ class LogoutView(APIView):
                 {"error": "Geçersiz token veya eksik parametre"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+
+@login_required
+def join_dealer(request):
+    if request.method == "POST":
+        form = JoinDealerForm(request.POST)
+        if form.is_valid():
+            secure_id = form.cleaned_data['secure_id']
+            dealer = get_object_or_404(Dealer, secure_id=secure_id)
+            request.user.dealer = dealer
+            request.user.save()
+            return redirect("dashboard")  # yönlendirilecek sayfa
+    else:
+        form = JoinDealerForm()
+
+    return render(request, "join_dealer.html", {"form": form})

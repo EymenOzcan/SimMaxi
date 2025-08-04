@@ -8,7 +8,7 @@ from django.utils import timezone
 from datetime import timedelta
 from unfold.admin import ModelAdmin
 from app import dealers
-from app.dealers.models import Dealer
+from app.dealers.models import Dealer, DealerRole
 from app.users.models import CustomUser
 from .models import eSIMPackage, Provider, Country
 from .tasks import (
@@ -419,14 +419,22 @@ class CustomUserAdmin(admin.ModelAdmin):
     list_filter = ("currency",)
     search_fields = ("username", "email")
 
+class DealerRoleInline(admin.TabularInline):
+    model = DealerRole
+    extra = 0
+    autocomplete_fields = ["user"]
+    fields = ("user", "role")
+
 @admin.register(Dealer)
 class DealerAdmin(admin.ModelAdmin):
     list_display = (
         "dealer_name",
         "commission_rate",
         "is_active",
-        "dealer_balance"
+        "dealer_balance",
+        "secure_id",
     )
+    inlines = [DealerRoleInline]
     search_fields = (
         "dealer_name",
 
