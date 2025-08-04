@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from datetime import timedelta
 from pathlib import Path
-
+from django.templatetags.static import static
 from django.conf import settings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -50,11 +50,13 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "app.esim",
+    "app.dealers",
     "rest_framework",
     "app.users",
     "drf_spectacular",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
+    'phonenumber_field',
 ]
 
 MIDDLEWARE = [
@@ -69,6 +71,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "simmaxi.urls"
 
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -218,4 +223,48 @@ SIMPLE_JWT = {
     "TOKEN_BLACKLIST_SERIALIZER": "rest_framework_simplejwt.serializers.TokenBlacklistSerializer",
     "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
+}
+UNFOLD = {
+    # Site başlık ayarları
+    "SITE_TITLE": "eSIM Yönetim Paneli",
+    "SITE_HEADER": "eSIM Admin",
+    "SITE_SUBHEADER": "Paket Yönetim Sistemi",
+    
+    # Logo ayarları - Seçenek 1: Her iki tema için aynı logo
+    "SITE_LOGO": lambda request: static("img/logo.svg"),
+    
+    # İkon ayarları (32px yükseklik için optimize edilmeli)
+    "SITE_ICON": lambda request: static("img/logo.svg"),
+    
+    # Favicon ayarları
+    "SITE_FAVICONS": [
+        {
+            "rel": "icon",
+            "sizes": "32x32",
+            "type": "image/svg+xml",
+            "href": lambda request: static("img/logo.svg"),
+        },
+        {
+            "rel": "icon",
+            "sizes": "16x16",
+            "type": "image/png",
+            "href": lambda request: static("img/logo.svg"),
+        },
+        {
+            "rel": "icon",
+            "sizes": "32x32",
+            "type": "image/png",
+            "href": lambda request: static("img/logo.svg"),
+        },
+    ],
+    
+    # Ana sayfa URL'i
+    "SITE_URL": "/",
+    
+    # Login sayfası arka plan resmi
+    "LOGIN": {
+        "image": lambda request: static("img/logo.svg"),
+    },
+    
+    
 }
