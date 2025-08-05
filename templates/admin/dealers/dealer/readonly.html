@@ -1,0 +1,353 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<style>
+    body {
+        background: #1a1f2e;
+        color: #ffffff;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 30px 20px;
+    }
+    
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    
+    .header h1 {
+        font-size: 28px;
+        font-weight: 600;
+        margin: 0;
+        color: #ffffff;
+    }
+    
+    .back-btn {
+        background: #6366f1;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: background 0.2s;
+    }
+    
+    .back-btn:hover {
+        background: #5855eb;
+        color: white;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+        margin-bottom: 30px;
+    }
+    
+    .info-card {
+        background: #262d42;
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid #374151;
+    }
+    
+    .info-card h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: #ffffff;
+    }
+    
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #374151;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-size: 14px;
+        color: #9ca3af;
+        font-weight: 500;
+    }
+    
+    .info-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #ffffff;
+    }
+    
+    .status-active {
+        background: #10b981;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .status-inactive {
+        background: #ef4444;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .balance {
+        color: #10b981;
+        font-weight: 700;
+    }
+    
+    .commission {
+        color: #f59e0b;
+        font-weight: 700;
+    }
+    
+    .secure-id {
+        background: #374151;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        color: #e5e7eb;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 24px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: #262d42;
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid #374151;
+        text-align: center;
+    }
+    
+    .stat-card h4 {
+        font-size: 14px;
+        color: #9ca3af;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+    
+    .stat-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: #ffffff;
+    }
+    
+    .stat-value.green {
+        color: #10b981;
+    }
+    
+    .stat-value.blue {
+        color: #3b82f6;
+    }
+    
+    .stat-value.orange {
+        color: #f59e0b;
+    }
+    
+    .users-section {
+        background: #262d42;
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid #374151;
+    }
+    
+    .users-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .users-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .users-table th {
+        background: #374151;
+        color: #e5e7eb;
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 14px;
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .users-table td {
+        padding: 12px;
+        border-bottom: 1px solid #374151;
+        color: #e5e7eb;
+    }
+    
+    .users-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .role-badge {
+        background: #6366f1;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .no-users {
+        text-align: center;
+        color: #9ca3af;
+        padding: 40px;
+        font-style: italic;
+    }
+    
+    @media (max-width: 768px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .header {
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .users-table {
+            font-size: 14px;
+        }
+    }
+</style>
+
+<div class="container">
+    <div class="header">
+        <h1>{{ dealer.dealer_name }}</h1>
+        <a href="{% url 'admin:dealers_dealer_changelist' %}" class="back-btn">← Geri Dön</a>
+    </div>
+    
+    <!-- Temel Bilgiler -->
+    <div class="info-grid">
+        <div class="info-card">
+            <h3>Temel Bilgiler</h3>
+            <div class="info-row">
+                <span class="info-label">Bayi Adı</span>
+                <span class="info-value">{{ dealer.dealer_name }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Komisyon Oranı</span>
+                <span class="info-value commission">{{ dealer.commission_rate }}%</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Aktif mi?</span>
+                <span class="info-value">
+                    {% if dealer.is_active %}
+                        <span class="status-active">✅ Aktif</span>
+                    {% else %}
+                        <span class="status-inactive">❌ Pasif</span>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        
+        <div class="info-card">
+            <h3>Finansal Bilgiler</h3>
+            <div class="info-row">
+                <span class="info-label">Bakiye</span>
+                <span class="info-value balance">${{ dealer.dealer_balance }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Secure ID</span>
+                <span class="info-value">
+                    <code class="secure-id">{{ dealer.secure_id }}</code>
+                </span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- İstatistikler -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h4>Toplam Satış</h4>
+            <div class="stat-value green">$0.00</div>
+        </div>
+        
+        <div class="stat-card">
+            <h4>Toplam Kazanç</h4>
+            <div class="stat-value blue">$0.00</div>
+        </div>
+        
+        <div class="stat-card">
+            <h4>Aylık Satış</h4>
+            <div class="stat-value">$0.00</div>
+        </div>
+        
+        <div class="stat-card">
+            <h4>Aylık Kazanç</h4>
+            <div class="stat-value orange">$0.00</div>
+        </div>
+    </div>
+    
+    <!-- Bayi Kullanıcıları -->
+    <div class="users-section">
+        <div class="users-header">
+            <h3>Bayi Kullanıcıları</h3>
+        </div>
+        
+        {% if dealer.dealerrole_set.all %}
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>Kullanıcı Adı</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dealer_role in dealer.dealerrole_set.all %}
+                    <tr>
+                        <td>{{ dealer_role.user.username }}</td>
+                        <td>{{ dealer_role.user.email|default:"—" }}</td>
+                        <td>
+                            <span class="role-badge">{{ dealer_role.get_role_display }}</span>
+                        </td>
+                        <td>
+                            {% if dealer_role.user.is_active %}
+                                <span class="status-active">Aktif</span>
+                            {% else %}
+                                <span class="status-inactive">Pasif</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="no-users">
+                Alt bayi bulunmamaktadır.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

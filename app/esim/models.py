@@ -14,6 +14,9 @@ class Country(models.Model):
     name = models.CharField(max_length=190)
     code = models.CharField(max_length=20)
     flag = models.URLField()
+    is_active = models.BooleanField(default=True)
+    is_regional = models.BooleanField(default=False)
+    is_global = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.name} ({self.code})"

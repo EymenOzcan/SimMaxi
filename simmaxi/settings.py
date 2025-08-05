@@ -77,7 +77,7 @@ STATICFILES_DIRS = [
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / 'templates'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -265,6 +265,43 @@ UNFOLD = {
     "LOGIN": {
         "image": lambda request: static("img/logo.svg"),
     },
+    "MENU": [
+    {
+        "label": "📦 Paket Yönetimi",
+        "icon": "Package",
+        "items": [
+            {"model": "app.esim.esimpackage", "label": "eSIM Paketleri"},
+            {"model": "app.esim.provider", "label": "Sağlayıcılar"},
+            {"model": "app.esim.country", "label": "Ülkeler"},
+        ],
+    },
+    {
+        "label": "👥 Bayiler",
+        "icon": "Users",
+        "items": [
+            {"model": "app.dealers.dealer", "label": "Bayiler"},
+            {"model": "app.dealers.dealerrole", "label": "Roller"},
+        ],
+    },
+    {
+        "label": "👤 Kullanıcılar",
+        "icon": "User",
+        "items": [
+            {"model": "app.users.customuser", "label": "Kullanıcılar"},
+        ],
+    },
+    {
+        "label": "⚙️ Araçlar",
+        "icon": "Settings",
+        "items": [
+            {"url": "/admin/app/esim/esimpackage/sync-all/", "label": "Tüm Paketleri Sync Et"},
+            {"url": "/admin/app/esim/esimpackage/sync-country/", "label": "Ülke Bazlı Sync"},
+            {"url": "/admin/app/esim/esimpackage/cleanup/", "label": "Paket Temizleme"},
+            {"url": "/admin/app/esim/esimpackage/validate/", "label": "Veri Doğrulama"},
+            {"url": "/admin/app/esim/esimpackage/stats/", "label": "İstatistikler"},
+        ],
+    },
+]
     
     
 }
