@@ -10,7 +10,9 @@ from unfold.admin import ModelAdmin
 from app import dealers
 from app.dealers.models import Dealer, DealerRole
 from app.users.models import CustomUser
-from .models import eSIMPackage, Provider, Country
+from .models import OfferedPackage, eSIMPackage, Provider, Country
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from .tasks import (
     sync_all_esim_packages,
     sync_country_esim_packages,
@@ -44,6 +46,23 @@ class PriceRangeFilter(admin.SimpleListFilter):
             return queryset.filter(price__gte=50, price__lte=100)
         elif self.value() == "100+":
             return queryset.filter(price__gte=100)
+
+
+@receiver(post_save, sender=eSIMPackage)
+def create_offered_package(sender, instance, created, **kwargs):
+    if instance.is_offered:
+        OfferedPackage.objects.get_or_create(
+            esim=instance,
+            defaults={
+                "title": instance.name[:50],
+                "explanation": instance.detail.get("description", "")[
+                    :70
+                ],  # örnek alım
+                "end_user_sales": True,
+                "dealer_sale": True,
+                "status": True,
+            },
+        )
 
 
 class DataAmountRangeFilter(admin.SimpleListFilter):
@@ -80,7 +99,7 @@ class ProviderFilter(admin.SimpleListFilter):
     parameter_name = "provider"
 
     def lookups(self, request, model_admin):
-        providers = Provider.objects.all().order_by('name')
+        providers = Provider.objects.all().order_by("name")
         return [(provider.id, provider.name) for provider in providers]
 
     def queryset(self, request, queryset):
@@ -108,22 +127,29 @@ class ProviderAdmin(ModelAdmin):
 
     def package_count(self, obj):
         count = eSIMPackage.objects.filter(provider=obj).count()
-        return format_html('<span style="font-weight: bold; color: #666;">{}</span>', count)
+        return format_html(
+            '<span style="font-weight: bold; color: #666;">{}</span>', count
+        )
 
     package_count.short_description = "Toplam Paket"
 
     def active_package_count(self, obj):
         count = eSIMPackage.objects.filter(provider=obj, is_active=True).count()
         color = "#28a745" if count > 0 else "#dc3545"
-        return format_html('<span style="font-weight: bold; color: {};">{}</span>', color, count)
+        return format_html(
+            '<span style="font-weight: bold; color: {};">{}</span>', color, count
+        )
 
     active_package_count.short_description = "Aktif Paket"
 
     def view_packages_button(self, obj):
-        url = reverse("admin:esim_esimpackage_changelist") + f"?provider__id__exact={obj.id}"
+        url = (
+            reverse("admin:esim_esimpackage_changelist")
+            + f"?provider__id__exact={obj.id}"
+        )
         return format_html(
             '<a class="button" href="{}" style="background: #007cba; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px;">📦 Paketleri Görüntüle</a>',
-            url
+            url,
         )
 
     view_packages_button.short_description = "Paketler"
@@ -163,7 +189,9 @@ class ProviderAdmin(ModelAdmin):
 
             esim_go = Esimgo()
             esim_go.get_all_esim()
-            messages.success(request, f"✅ {provider.name} paketleri senkronize edildi.")
+            messages.success(
+                request, f"✅ {provider.name} paketleri senkronize edildi."
+            )
 
         return redirect("admin:esim_provider_changelist")
 
@@ -184,7 +212,9 @@ class CountryAdmin(ModelAdmin):
     def package_count(self, obj):
         count = eSIMPackage.objects.filter(countries=obj, is_active=True).count()
         color = "#28a745" if count > 0 else "#dc3545"
-        return format_html('<span style="font-weight: bold; color: {};">{}</span>', color, count)
+        return format_html(
+            '<span style="font-weight: bold; color: {};">{}</span>', color, count
+        )
 
     package_count.short_description = "Aktif Paket Sayısı"
 
@@ -203,8 +233,8 @@ class CountryAdmin(ModelAdmin):
             + f"?countries__id__exact={obj.id}"
         )
         return format_html(
-            '<a class="button" href="{}" style="background: #007cba; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px;">📱 eSIM\'leri Görüntüle</a>', 
-            url
+            '<a class="button" href="{}" style="background: #007cba; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px;">📱 eSIM\'leri Görüntüle</a>',
+            url,
         )
 
     view_esims_button.short_description = "eSIM'leri Görüntüle"
@@ -236,12 +266,14 @@ class eSIMPackageAdmin(ModelAdmin):
     list_display = (
         "package_info",
         "provider_info",
+        "slug",
         "price_info",
-        "data_info", 
+        "data_info",
         "validity_info",
         "country_info",
         "status_info",
-        "updated_at",
+        "is_offered",
+       
     )
     list_filter = (
         ProviderFilter,
@@ -256,26 +288,27 @@ class eSIMPackageAdmin(ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     filter_horizontal = ("countries",)
     list_per_page = 25
-    list_select_related = ('provider',)
-    
+    list_select_related = ("provider",)
+
     # Toplu işlemler
     actions = [
-        "bulk_activate_packages", 
-        "bulk_deactivate_packages", 
+        "bulk_activate_packages",
+        "bulk_deactivate_packages",
         "bulk_delete_packages",
-        "bulk_sync_selected_providers"
+        "bulk_sync_selected_providers",
     ]
 
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related('countries')
+        return super().get_queryset(request).prefetch_related("countries")
 
     def package_info(self, obj):
         return format_html(
             '<div style="font-weight: bold; color: #333;">{}</div>'
             '<div style="font-size: 11px; color: #666;">ID: {}</div>',
-            obj.name[:50] + ('...' if len(obj.name) > 50 else ''),
-            obj.id
+            obj.name[:50] + ("..." if len(obj.name) > 50 else ""),
+            obj.id,
         )
+
     package_info.short_description = "Paket Bilgisi"
 
     def provider_info(self, obj):
@@ -285,15 +318,17 @@ class eSIMPackageAdmin(ModelAdmin):
             '<div style="font-size: 11px; color: #666;">{}</div>',
             color,
             obj.provider.name,
-            obj.provider.slug
+            obj.provider.slug,
         )
+
     provider_info.short_description = "Provider"
 
     def price_info(self, obj):
         return format_html(
             '<div style="font-weight: bold; color: #e67e22; font-size: 14px;">${}</div>',
-            obj.price
+            obj.price,
         )
+
     price_info.short_description = "Fiyat"
 
     def data_info(self, obj):
@@ -304,38 +339,42 @@ class eSIMPackageAdmin(ModelAdmin):
         elif obj.data_amount_mb >= 1024:
             gb = round(obj.data_amount_mb / 1024, 1)
             return format_html(
-                '<div style="font-weight: bold; color: #3498db;">{} GB</div>',
-                gb
+                '<div style="font-weight: bold; color: #3498db;">{} GB</div>', gb
             )
         else:
             return format_html(
                 '<div style="font-weight: bold; color: #3498db;">{} MB</div>',
-                obj.data_amount_mb
+                obj.data_amount_mb,
             )
+
     data_info.short_description = "Veri Miktarı"
 
     def validity_info(self, obj):
         return format_html(
             '<div style="font-weight: bold; color: #f39c12;">📅 {} gün</div>',
-            obj.validity_days
+            obj.validity_days,
         )
+
     validity_info.short_description = "Geçerlilik"
 
     def country_info(self, obj):
         countries = list(obj.countries.all()[:3])
         country_codes = [c.code for c in countries]
-        
+
         if obj.countries.count() > 3:
-            display_text = f"{', '.join(country_codes)} +{obj.countries.count() - 3} daha"
+            display_text = (
+                f"{', '.join(country_codes)} +{obj.countries.count() - 3} daha"
+            )
         else:
-            display_text = ', '.join(country_codes)
-            
+            display_text = ", ".join(country_codes)
+
         return format_html(
             '<div style="font-size: 12px; color: #34495e;">🌍 {}</div>'
             '<div style="font-size: 10px; color: #7f8c8d;">Toplam: {} ülke</div>',
             display_text,
-            obj.countries.count()
+            obj.countries.count(),
         )
+
     country_info.short_description = "Ülkeler"
 
     def status_info(self, obj):
@@ -347,49 +386,52 @@ class eSIMPackageAdmin(ModelAdmin):
             return format_html(
                 '<div style="background: #f8d7da; color: #721c24; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; text-align: center;">❌ PASİF</div>'
             )
+
     status_info.short_description = "Durum"
 
     # Toplu işlem fonksiyonları
     def bulk_activate_packages(self, request, queryset):
         count = queryset.update(is_active=True, updated_at=timezone.now())
         self.message_user(
-            request, 
-            f"✅ {count} paket aktif hale getirildi.",
-            level=messages.SUCCESS
+            request, f"✅ {count} paket aktif hale getirildi.", level=messages.SUCCESS
         )
+
     bulk_activate_packages.short_description = "🟢 Seçili paketleri aktif hale getir"
 
     def bulk_deactivate_packages(self, request, queryset):
         count = queryset.update(is_active=False, updated_at=timezone.now())
         self.message_user(
-            request, 
-            f"⚠️ {count} paket pasif hale getirildi.",
-            level=messages.WARNING
+            request, f"⚠️ {count} paket pasif hale getirildi.", level=messages.WARNING
         )
+
     bulk_deactivate_packages.short_description = "🔴 Seçili paketleri pasif hale getir"
 
     def bulk_delete_packages(self, request, queryset):
         count = queryset.count()
         queryset.delete()
-        self.message_user(
-            request, 
-            f"🗑️ {count} paket silindi.",
-            level=messages.ERROR
-        )
+        self.message_user(request, f"🗑️ {count} paket silindi.", level=messages.ERROR)
+
     bulk_delete_packages.short_description = "🗑️ Seçili paketleri sil"
 
     def bulk_sync_selected_providers(self, request, queryset):
-        providers = set(queryset.values_list('provider__slug', flat=True))
+        providers = set(queryset.values_list("provider__slug", flat=True))
         for provider_slug in providers:
             if provider_slug == "esimaccess":
                 task = sync_all_esim_packages.delay()
-                messages.success(request, f"🔄 {provider_slug} senkronizasyonu başlatıldı. Task ID: {task.id}")
+                messages.success(
+                    request,
+                    f"🔄 {provider_slug} senkronizasyonu başlatıldı. Task ID: {task.id}",
+                )
             elif provider_slug == "esimgo":
                 from .services import Esimgo
+
                 esim_go = Esimgo()
                 esim_go.get_all_esim()
                 messages.success(request, f"🔄 {provider_slug} senkronize edildi.")
-    bulk_sync_selected_providers.short_description = "🔄 Seçili paketlerin provider'larını senkronize et"
+
+    bulk_sync_selected_providers.short_description = (
+        "🔄 Seçili paketlerin provider'larını senkronize et"
+    )
 
     def get_urls(self):
         urls = super().get_urls()
@@ -430,18 +472,20 @@ class eSIMPackageAdmin(ModelAdmin):
     def provider_catalog_view(self, request):
         """Provider'lara göre paket kataloğu görünümü"""
         providers_data = []
-        
+
         for provider in Provider.objects.all():
             packages = eSIMPackage.objects.filter(provider=provider)
             active_packages = packages.filter(is_active=True)
-            
-            providers_data.append({
-                'provider': provider,
-                'total_packages': packages.count(),
-                'active_packages': active_packages.count(),
-                'inactive_packages': packages.filter(is_active=False).count(),
-                'packages': active_packages[:10]  # İlk 10 aktif paket
-            })
+
+            providers_data.append(
+                {
+                    "provider": provider,
+                    "total_packages": packages.count(),
+                    "active_packages": active_packages.count(),
+                    "inactive_packages": packages.filter(is_active=False).count(),
+                    "packages": active_packages[:10],  # İlk 10 aktif paket
+                }
+            )
 
         return render(
             request,
@@ -592,11 +636,13 @@ class CustomUserAdmin(ModelAdmin):
     list_filter = ("currency",)
     search_fields = ("username", "email")
 
+
 class DealerRoleInline(admin.TabularInline):
     model = DealerRole
     extra = 0
     autocomplete_fields = ["user"]
     fields = ("user", "role")
+
 
 @admin.register(Dealer)
 class DealerAdmin(ModelAdmin):
@@ -606,14 +652,12 @@ class DealerAdmin(ModelAdmin):
         "is_active",
         "dealer_balance",
         "secure_id",
-        "view_button",     
+        "view_button",
         "edit_button",
     )
     inlines = [DealerRoleInline]
-    search_fields = (
-        "dealer_name",
+    search_fields = ("dealer_name",)
 
-    )
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
@@ -633,21 +677,33 @@ class DealerAdmin(ModelAdmin):
             dealer=dealer,
         )
         return render(request, "admin/dealers/dealer/readonly.html", context)
+
     def view_button(self, obj):
         url = reverse("admin:dealers_dealer_readonly", args=[obj.pk])
         return format_html(
             '<a class="button" href="{}" style="background:#007bff;color:white;padding:5px 10px;border-radius:4px;text-decoration:none;">👁 Görüntüle</a>',
-            url
+            url,
         )
+
     view_button.short_description = "Görüntüle"
 
     def edit_button(self, obj):
         url = reverse("admin:dealers_dealer_change", args=[obj.pk])
         return format_html(
             '<a class="button" href="{}" style="background:#ffc107;color:black;padding:5px 10px;border-radius:4px;text-decoration:none;">✏️ Düzenle</a>',
-            url
+            url,
         )
+
     edit_button.short_description = "Düzenle"
+
+
+@admin.register(OfferedPackage)
+class OfferedPackageAdmin(ModelAdmin):
+    list_display = ("title", "esim", "sale_price", "status")
+    readonly_fields = ("sale_price",)
+    list_filter = ("end_user_sales", "dealer_sale", "status")
+    search_fields = ("title", "explanation", "esim__name")
+
 
 admin.site.site_header = "eSIM Yönetim Paneli"
 admin.site.site_title = "eSIM Admin"

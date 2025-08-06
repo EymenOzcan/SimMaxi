@@ -5,6 +5,7 @@ from app.dealers.utils import generate_base62_id
 
 # Create your models here.
 
+
 class Dealer(models.Model):
     dealer_name = models.TextField(max_length=100)
     secure_id = models.CharField(
@@ -12,12 +13,12 @@ class Dealer(models.Model):
     )
     is_active = models.BooleanField(default=True)
     commission_rate = models.DecimalField(
-        max_digits=5,      # örn. 100.00'e kadar destekler
+        max_digits=5,  # örn. 100.00'e kadar destekler
         decimal_places=2,  # 2 basamak (örn. 5.50 = %5,5)
-        help_text="Komisyon oranını yüzde olarak giriniz. (Örn: 5.00 = %5)"
+        help_text="Komisyon oranını yüzde olarak giriniz. (Örn: 5.00 = %5)",
     )
     email = models.EmailField()
-    phone_number = PhoneNumberField(unique=True, region='TR')
+    phone_number = PhoneNumberField(unique=True, region="TR")
     adress = models.TextField()
     authorized_name = models.TextField(blank=False)
     dealer_balance = models.DecimalField(
@@ -38,9 +39,11 @@ class Dealer(models.Model):
         default="USD",
         help_text="Bakiyenin tutulduğu para birimi",
     )
+
     def __str__(self):
         return f"{self.dealer_name} (%{self.commission_rate})"
-    
+
+
 class DealerRole(models.Model):
     ROLE_CHOICES = [
         ("admin", "Admin"),
@@ -57,4 +60,3 @@ class DealerRole(models.Model):
 
     def __str__(self):
         return f"{self.user.email} -> {self.dealer.dealer_name} ({self.role})"
-    

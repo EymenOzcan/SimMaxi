@@ -56,7 +56,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
-    'phonenumber_field',
+    "phonenumber_field",
 ]
 
 MIDDLEWARE = [
@@ -77,7 +77,7 @@ STATICFILES_DIRS = [
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / 'templates'],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -229,13 +229,10 @@ UNFOLD = {
     "SITE_TITLE": "eSIM Yönetim Paneli",
     "SITE_HEADER": "eSIM Admin",
     "SITE_SUBHEADER": "Paket Yönetim Sistemi",
-    
     # Logo ayarları - Seçenek 1: Her iki tema için aynı logo
     "SITE_LOGO": lambda request: static("img/logo.svg"),
-    
     # İkon ayarları (32px yükseklik için optimize edilmeli)
     "SITE_ICON": lambda request: static("img/logo.svg"),
-    
     # Favicon ayarları
     "SITE_FAVICONS": [
         {
@@ -257,51 +254,59 @@ UNFOLD = {
             "href": lambda request: static("img/logo.svg"),
         },
     ],
-    
     # Ana sayfa URL'i
     "SITE_URL": "/",
-    
     # Login sayfası arka plan resmi
     "LOGIN": {
         "image": lambda request: static("img/logo.svg"),
     },
     "MENU": [
-    {
-        "label": "📦 Paket Yönetimi",
-        "icon": "Package",
-        "items": [
-            {"model": "app.esim.esimpackage", "label": "eSIM Paketleri"},
-            {"model": "app.esim.provider", "label": "Sağlayıcılar"},
-            {"model": "app.esim.country", "label": "Ülkeler"},
-        ],
-    },
-    {
-        "label": "👥 Bayiler",
-        "icon": "Users",
-        "items": [
-            {"model": "app.dealers.dealer", "label": "Bayiler"},
-            {"model": "app.dealers.dealerrole", "label": "Roller"},
-        ],
-    },
-    {
-        "label": "👤 Kullanıcılar",
-        "icon": "User",
-        "items": [
-            {"model": "app.users.customuser", "label": "Kullanıcılar"},
-        ],
-    },
-    {
-        "label": "⚙️ Araçlar",
-        "icon": "Settings",
-        "items": [
-            {"url": "/admin/app/esim/esimpackage/sync-all/", "label": "Tüm Paketleri Sync Et"},
-            {"url": "/admin/app/esim/esimpackage/sync-country/", "label": "Ülke Bazlı Sync"},
-            {"url": "/admin/app/esim/esimpackage/cleanup/", "label": "Paket Temizleme"},
-            {"url": "/admin/app/esim/esimpackage/validate/", "label": "Veri Doğrulama"},
-            {"url": "/admin/app/esim/esimpackage/stats/", "label": "İstatistikler"},
-        ],
-    },
-]
-    
-    
+        {
+            "label": "📦 Paket Yönetimi",
+            "icon": "Package",
+            "items": [
+                {"model": "app.esim.esimpackage", "label": "eSIM Paketleri"},
+                {"model": "app.esim.provider", "label": "Sağlayıcılar"},
+                {"model": "app.esim.country", "label": "Ülkeler"},
+            ],
+        },
+        {
+            "label": "👥 Bayiler",
+            "icon": "Users",
+            "items": [
+                {"model": "app.dealers.dealer", "label": "Bayiler"},
+                {"model": "app.dealers.dealerrole", "label": "Roller"},
+            ],
+        },
+        {
+            "label": "👤 Kullanıcılar",
+            "icon": "User",
+            "items": [
+                {"model": "app.users.customuser", "label": "Kullanıcılar"},
+            ],
+        },
+        {
+            "label": "⚙️ Araçlar",
+            "icon": "Settings",
+            "items": [
+                {
+                    "url": "/admin/app/esim/esimpackage/sync-all/",
+                    "label": "Tüm Paketleri Sync Et",
+                },
+                {
+                    "url": "/admin/app/esim/esimpackage/sync-country/",
+                    "label": "Ülke Bazlı Sync",
+                },
+                {
+                    "url": "/admin/app/esim/esimpackage/cleanup/",
+                    "label": "Paket Temizleme",
+                },
+                {
+                    "url": "/admin/app/esim/esimpackage/validate/",
+                    "label": "Veri Doğrulama",
+                },
+                {"url": "/admin/app/esim/esimpackage/stats/", "label": "İstatistikler"},
+            ],
+        },
+    ],
 }

@@ -444,6 +444,7 @@ class EsimMaxi:
         for pkg in packages:
             try:
                 name = pkg.get("name", "Unnamed Package")
+                slug = pkg.get("slug", "Unnamed Slug")
                 price = Decimal(str(pkg.get("price", 0))) / 10000
                 validity = int(pkg.get("duration", 0))
                 raw_data = pkg.get("data", "").upper().strip()
@@ -469,6 +470,7 @@ class EsimMaxi:
                         "price": price,
                         "validity_days": validity,
                         "data_amount_mb": data_mb,
+                        "slug":slug,
                         "detail": pkg,
                         "is_active": True,
                         "updated_at": timezone.now(),

@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.utils import timezone
 from django.db import models
 
@@ -47,11 +48,15 @@ class eSIMPackage(TimeStampedModel):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     validity_days = models.PositiveIntegerField()
     data_amount_mb = models.PositiveIntegerField()
+    slug = models.TextField(max_length=90)
     detail = models.JSONField()
     is_active = models.BooleanField(default=False)
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
     countries = models.ManyToManyField(Country)
     external_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
+    is_offered = models.BooleanField(
+        default=False, verbose_name="Sunulan Paket olarak işaretle"
+    )
 
     def __str__(self):
         return f"{self.name} - ${self.price}"
@@ -71,3 +76,42 @@ class eSIMPackage(TimeStampedModel):
         verbose_name = "eSIM Paketi"
         verbose_name_plural = "eSIM Paketleri"
         ordering = ["-updated_at"]
+
+
+class OfferedPackage(models.Model):
+    esim = models.ForeignKey(eSIMPackage, on_delete=models.CASCADE)
+    title = models.CharField(max_length=50)
+    explanation = models.CharField(max_length=70)
+    end_user_sales = models.BooleanField(default=True)
+    dealer_sale = models.BooleanField(default=True)
+    status = models.BooleanField(default=True)
+
+    cost_multiplier = models.DecimalField(
+        "Maliyet Çarpanı", max_digits=5, decimal_places=2, default=Decimal("1.00")
+    )
+    sales_multiplier = models.DecimalField(
+        "Satış Çarpanı", max_digits=5, decimal_places=2, default=Decimal("1.00")
+    )
+    cost_price = models.DecimalField(
+        "Maliyet Fiyatı (API'den Gelen)",
+        max_digits=12,
+        decimal_places=2,
+        editable=False,
+    )
+    sale_price = models.DecimalField(
+        "Satış Fiyatı", max_digits=12, decimal_places=2, editable=False
+    )
+
+    def save(self, *args, **kwargs):
+        # esim paketinden fiyatı çek
+        if self.esim and self.esim.price is not None:
+            self.cost_price = self.esim.price
+
+        # satış fiyatını otomatik hesapla
+        self.sale_price = (
+            (self.cost_price or Decimal("0.00"))
+            * (self.cost_multiplier or Decimal("1.00"))
+            * (self.sales_multiplier or Decimal("1.00"))
+        )
+
+        super().save(*args, **kwargs)

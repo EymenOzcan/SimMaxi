@@ -10,6 +10,7 @@ from .models import Dealer, DealerRole
 from .forms import JoinDealerForm, AddDealerUserForm
 from .utils import is_dealer_admin
 
+
 @login_required
 def join_dealer(request):
     if request.method == "POST":
@@ -19,11 +20,14 @@ def join_dealer(request):
             dealer = get_object_or_404(Dealer, secure_id=secure_id)
             request.user.dealer = dealer
             request.user.save()
-            DealerRole.objects.get_or_create(user=request.user, dealer=dealer, role="viewer")
+            DealerRole.objects.get_or_create(
+                user=request.user, dealer=dealer, role="viewer"
+            )
             return redirect("dashboard")
     else:
         form = JoinDealerForm()
     return render(request, "dealers/join_dealer.html", {"form": form})
+
 
 @login_required
 def add_user_to_dealer(request, dealer_id):
@@ -38,7 +42,9 @@ def add_user_to_dealer(request, dealer_id):
             role = form.cleaned_data["role"]
             user.dealer = dealer
             user.save()
-            DealerRole.objects.update_or_create(user=user, dealer=dealer, defaults={"role": role})
+            DealerRole.objects.update_or_create(
+                user=user, dealer=dealer, defaults={"role": role}
+            )
             return redirect("dealer_detail", dealer_id=dealer.id)
     else:
         form = AddDealerUserForm()

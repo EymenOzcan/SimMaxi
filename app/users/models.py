@@ -6,7 +6,7 @@ from app.dealers.models import Dealer
 
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
-    dealer = models.ForeignKey(Dealer,blank=True,null=True, on_delete=models.CASCADE)
+    dealer = models.ForeignKey(Dealer, blank=True, null=True, on_delete=models.CASCADE)
     balance = models.DecimalField(
         max_digits=12,
         decimal_places=2,
