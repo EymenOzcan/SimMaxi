@@ -248,7 +248,7 @@ class Esimgo:
                     or pkg.get("duration")
                     or 0
                 )
-
+                slug = pkg.get("name","Unnamed Slug")
                 data_mb = 0
                 if "dataAmount" in pkg and isinstance(pkg["dataAmount"], (int, float)):
                     data_mb = (
@@ -291,6 +291,7 @@ class Esimgo:
                         "is_active": True,
                         "updated_at": timezone.now(),
                         "external_id": external_id if external_id else None,
+                        "slug":slug
                     },
                     **filter_kwargs,
                 )
